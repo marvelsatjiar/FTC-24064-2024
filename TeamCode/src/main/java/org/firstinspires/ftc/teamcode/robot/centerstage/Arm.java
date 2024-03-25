@@ -18,7 +18,6 @@ public final class Arm {
 
     public final ElapsedTime flapTimer = new ElapsedTime();
 
-    // TODO Measure TIME_RETRACT_ARM
     public static double
             ANGLE_COLLECTING = 103,
             ANGLE_DEPOSITING = 190,

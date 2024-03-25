@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.control.filters;
+package org.firstinspires.ftc.teamcode.control.filters.singlefilter;
 
 import org.firstinspires.ftc.teamcode.control.gainmatrices.LowPassGains;
 

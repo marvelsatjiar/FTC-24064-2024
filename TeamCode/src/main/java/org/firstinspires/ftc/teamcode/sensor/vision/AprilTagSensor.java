@@ -20,6 +20,8 @@ import java.util.List;
 public class AprilTagSensor {
     // Distance from camera lens to the middle of the drivetrain (inches)
     public static final Vector2d offset = new Vector2d(0, -7.5);
+    public static final int STEP_SIZE = 100;
+    private int loops = 100;
 
     public static final double
             fx = 578.272,
@@ -48,24 +50,29 @@ public class AprilTagSensor {
                 .build();
     }
 
-    public List<AprilTagDetection> getFreshDetections() {
-        return aprilTagProcessor.getFreshDetections();
+    public List<AprilTagDetection> getRawDetections() {
+        return aprilTagProcessor.getDetections();
     }
 
     // Needs to be updated to use any tag location, not Centerstage specific
     public Pose2d getPoseEstimate() {
         Pose2d estimate = null;
-        for (AprilTagDetection detection : getFreshDetections()) {
-            if (detection.metadata != null) {
-                boolean isLargeTag = detection.metadata.id >= 7;
-                int multiplier = isLargeTag ? 1 : -1;
-                VectorF tagVec = detection.metadata.fieldPosition;
-                estimate = new Pose2d(
-                        tagVec.get(0) + (detection.ftcPose.y - offset.y) * multiplier,
-                        tagVec.get(1) + (detection.ftcPose.x - offset.x) * -multiplier,
-                        Math.toRadians((isLargeTag ? 0 : 180) + detection.ftcPose.yaw)
-                );
+        if (loops >= STEP_SIZE) {
+            for (AprilTagDetection detection : getRawDetections()) {
+                if (detection.metadata != null) {
+                    boolean isLargeTag = detection.metadata.id >= 7;
+                    int multiplier = isLargeTag ? 1 : -1;
+                    VectorF tagVec = detection.metadata.fieldPosition;
+                    estimate = new Pose2d(
+                            tagVec.get(0) + (detection.ftcPose.y - offset.y) * multiplier,
+                            tagVec.get(1) + (detection.ftcPose.x - offset.x) * -multiplier,
+                            Math.toRadians((isLargeTag ? 0 : 180) + detection.ftcPose.yaw)
+                    );
+                }
             }
+            loops = 0;
+        } else {
+            loops++;
         }
 
         return estimate;

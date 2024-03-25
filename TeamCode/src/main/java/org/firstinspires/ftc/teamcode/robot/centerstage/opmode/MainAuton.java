@@ -18,6 +18,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
 import org.firstinspires.ftc.teamcode.sensor.vision.PropSensor;
+import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 @Config
 @Autonomous(group = "24064 Main", preselectTeleOp = "MainTeleOp")
@@ -99,6 +100,9 @@ public final class MainAuton extends LinearOpMode {
 
             robot.drivetrain.updatePoseEstimate();
             robot.run();
+
+            mTelemetry.addData("Loop time", LoopUtil.getLoopTime());
+            mTelemetry.update();
         }
 
 //        autonEndPose = ...;

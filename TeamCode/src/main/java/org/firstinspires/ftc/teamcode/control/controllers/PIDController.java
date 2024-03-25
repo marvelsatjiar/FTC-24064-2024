@@ -6,8 +6,8 @@ import static java.lang.Math.signum;
 import org.firstinspires.ftc.teamcode.control.motion.Differentiator;
 import org.firstinspires.ftc.teamcode.control.motion.Integrator;
 import org.firstinspires.ftc.teamcode.control.motion.State;
-import org.firstinspires.ftc.teamcode.control.filters.Filter;
-import org.firstinspires.ftc.teamcode.control.filters.NoFilter;
+import org.firstinspires.ftc.teamcode.control.filters.singlefilter.Filter;
+import org.firstinspires.ftc.teamcode.control.filters.singlefilter.NoFilter;
 import org.firstinspires.ftc.teamcode.control.gainmatrices.PIDGains;
 
 public class PIDController implements FeedbackController {

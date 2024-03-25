@@ -38,6 +38,11 @@ public final class Robot {
             ANGLE_PURPLE_PIXEL_UNDEPLOYED = 0,
             ANGLE_PURPLE_PIXEL_DEPLOYED = 90;
 
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry) {
+        this(hardwareMap, telemetry, new Pose2d(0.0, 0.0, 0.0));
+    }
+
     /**
      * Instantiates a new robot.
      * @param hardwareMap A constant map that holds all the parts for config in code

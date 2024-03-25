@@ -28,6 +28,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
+import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 @TeleOp(group = "24064 Main")
 public final class MainTeleOp extends LinearOpMode {
@@ -39,7 +40,9 @@ public final class MainTeleOp extends LinearOpMode {
         gamepadEx1 = new GamepadEx(gamepad1);
         gamepadEx2 = new GamepadEx(gamepad2);
 
-        robot = new Robot(hardwareMap, telemetry, autonEndPose);
+
+        robot = new Robot(hardwareMap, telemetry);
+        if (autonEndPose != null) robot.drivetrain.pose = autonEndPose;
 
         robot.purplePixel.setActivated(true);
 
@@ -103,6 +106,7 @@ public final class MainTeleOp extends LinearOpMode {
             else robot.hang(trigger1);
 
             robot.printTelemetry();
+            mTelemetry.addData("Loop time", LoopUtil.getLoopTime());
             mTelemetry.update();
         }
     }
