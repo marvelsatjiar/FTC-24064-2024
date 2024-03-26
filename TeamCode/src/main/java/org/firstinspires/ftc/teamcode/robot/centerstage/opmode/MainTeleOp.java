@@ -62,8 +62,8 @@ public final class MainTeleOp extends LinearOpMode {
                 robot.drivetrain.setDrivePowers(
                         new PoseVelocity2d(
                                 new Vector2d(
-                                        gamepadEx1.getLeftX() * 0.2,
-                                        gamepadEx1.getLeftY() * 0.2
+                                        gamepadEx1.getLeftY() * 0.2,
+                                        gamepadEx1.getLeftX() * 0.2
                                 ),
                                 x * 0.2
                         )
@@ -72,8 +72,8 @@ public final class MainTeleOp extends LinearOpMode {
                 robot.drivetrain.setDrivePowers(
                     new PoseVelocity2d(
                             new Vector2d(
-                                    gamepadEx1.getLeftX(),
-                                    gamepadEx1.getLeftY()
+                                    gamepadEx1.getLeftY(),
+                                    gamepadEx1.getLeftX()
                             ),
                             x
                     )
@@ -106,7 +106,7 @@ public final class MainTeleOp extends LinearOpMode {
             else robot.hang(trigger1);
 
             robot.printTelemetry();
-            mTelemetry.addData("Loop time", LoopUtil.getLoopTime());
+            mTelemetry.addData("Loop time (hertz)", LoopUtil.getLoopTimeInHertz());
             mTelemetry.update();
         }
     }

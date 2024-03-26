@@ -101,7 +101,7 @@ public final class MainAuton extends LinearOpMode {
             robot.drivetrain.updatePoseEstimate();
             robot.run();
 
-            mTelemetry.addData("Loop time", LoopUtil.getLoopTime());
+            mTelemetry.addData("Loop time (hertz)", LoopUtil.getLoopTimeInHertz());
             mTelemetry.update();
         }
 

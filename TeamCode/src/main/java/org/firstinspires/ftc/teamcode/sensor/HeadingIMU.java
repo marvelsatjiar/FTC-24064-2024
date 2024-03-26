@@ -48,9 +48,14 @@ public final class HeadingIMU {
     /**
      * Both values are put into a buffer to automatically be averaged with the last 10 values. This allows us to bypass IMU static and have a greater level of accuracy.
      */
-    private void update() {
+    public void update() {
         heading = headingFilter.calculate(imu.getRobotYawPitchRollAngles().getYaw(RADIANS));
         angularVel = angularVelFilter.calculate(imu.getRobotAngularVelocity(RADIANS).zRotationRate);
+    }
+
+    public void rawUpdate() {
+        heading = imu.getRobotYawPitchRollAngles().getYaw(RADIANS);
+        angularVel = imu.getRobotAngularVelocity(RADIANS).zRotationRate;
     }
 
     public double getHeading() {

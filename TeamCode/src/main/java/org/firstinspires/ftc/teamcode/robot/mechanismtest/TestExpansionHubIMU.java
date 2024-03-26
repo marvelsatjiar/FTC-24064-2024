@@ -30,7 +30,7 @@ public final class TestExpansionHubIMU extends LinearOpMode {
 
             imu.update();
 
-            mTelemetry.addData("Heading", imu.getHeading());
+            mTelemetry.addData("Heading", Math.toDegrees(imu.getHeading()));
             mTelemetry.update();
         }
     }

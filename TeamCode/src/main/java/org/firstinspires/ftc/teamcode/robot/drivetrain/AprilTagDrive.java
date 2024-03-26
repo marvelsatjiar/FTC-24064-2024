@@ -12,17 +12,19 @@ import org.firstinspires.ftc.teamcode.control.gainmatrices.ComplementaryGains;
 import org.firstinspires.ftc.teamcode.roadrunner.message.PoseMessage;
 import org.firstinspires.ftc.teamcode.sensor.vision.AprilTagSensor;
 
-// TODO Make into a localizer
+// Pose correction works with any localizer, an advantage of using a separate drive class
 public class AprilTagDrive extends MecanumDrive {
-    // For example, 0.3 means odometry will be weighted 40% while April Tag estimate will be weighted 70%
-    private static final double ODO_TRUST_COEF = 0.4;
+    public static class Params {
+        // For example, 0.4 means localizer will be weighted 40% while April Tag estimate will be weighted 60%
+        public double localizerTrust = 0.4;
+    }
 
-    // ---
+    public static Params PARAMS = new Params();
 
     private AprilTagSensor aprilTag;
-    private HardwareMap hardwareMap;
+    private final HardwareMap hardwareMap;
 
-    private final ComplementaryFilter filter = new ComplementaryFilter(new ComplementaryGains(ODO_TRUST_COEF));
+    private final ComplementaryFilter filter = new ComplementaryFilter(new ComplementaryGains(PARAMS.localizerTrust));
 
     public AprilTagDrive(HardwareMap hardwareMap, Pose2d pose) {
         super(hardwareMap, pose);
@@ -43,16 +45,16 @@ public class AprilTagDrive extends MecanumDrive {
 
         Pose2d localizerPose = pose.plus(twist.value());
 
-        Pose2d estimate = null;
+        Pose2d tagEstimate = null;
         if (aprilTag != null) {
-            estimate = aprilTag.getPoseEstimate();
+            tagEstimate = aprilTag.getPoseEstimate();
         }
 
-        if (estimate != null) {
+        if (tagEstimate != null) {
             pose = new Pose2d(
                     new Vector2d(
-                            filter.calculate(localizerPose.position.x, estimate.position.x),
-                            filter.calculate(localizerPose.position.y, estimate.position.y)
+                            filter.calculate(localizerPose.position.x, tagEstimate.position.x),
+                            filter.calculate(localizerPose.position.y, tagEstimate.position.y)
                     ),
                     localizerPose.heading
             );

@@ -23,7 +23,7 @@ public class KalmanFilter implements DualFilter {
     /**
      * @param model the CHANGE in state from the model
      * @param sensor the state from the sensor (i.e. April Tag / distance sensor)
-     * @return the filtered kalman state
+     * @return the filtered Kalman state
      */
     @Override
     public double calculate(double model, double sensor) {
