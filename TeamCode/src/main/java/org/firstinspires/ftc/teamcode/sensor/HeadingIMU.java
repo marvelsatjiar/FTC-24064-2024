@@ -34,6 +34,7 @@ public final class HeadingIMU {
         angularVelFilter = new MovingAverageFilter(gains);
     }
 
+    // Warning: This has the same effect on your loop times as checking every loop does.
     public void startIMUThread(LinearOpMode opMode) {
         imuThread = new Thread(() -> {
             while (!opMode.isStopRequested()) {
@@ -56,6 +57,12 @@ public final class HeadingIMU {
     public void rawUpdate() {
         heading = imu.getRobotYawPitchRollAngles().getYaw(RADIANS);
         angularVel = imu.getRobotAngularVelocity(RADIANS).zRotationRate;
+    }
+
+    public void update(int checks) {
+        for (int i = 0; i < checks; i++) {
+            update();
+        }
     }
 
     public double getHeading() {

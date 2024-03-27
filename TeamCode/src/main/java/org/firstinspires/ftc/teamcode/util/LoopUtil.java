@@ -8,7 +8,7 @@ public class LoopUtil {
      */
     public static long getLoopTime() {
         long currentTime = System.nanoTime();
-        long delta = lastTime - currentTime;
+        long delta = currentTime - lastTime;
         lastTime = currentTime;
         return delta;
     }

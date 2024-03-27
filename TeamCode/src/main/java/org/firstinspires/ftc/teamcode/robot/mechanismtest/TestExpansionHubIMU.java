@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.sensor.HeadingIMU;
 import org.firstinspires.ftc.teamcode.util.BulkReader;
+import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 
 @TeleOp(group = "Single mechanism test")
@@ -30,6 +31,7 @@ public final class TestExpansionHubIMU extends LinearOpMode {
 
             imu.update();
 
+            mTelemetry.addData("Loop time (hertz)", LoopUtil.getLoopTimeInHertz());
             mTelemetry.addData("Heading", Math.toDegrees(imu.getHeading()));
             mTelemetry.update();
         }
