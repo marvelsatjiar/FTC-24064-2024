@@ -25,11 +25,14 @@ public class AprilTagSensor {
     public static final int STEP_SIZE = 100;
     public static final AprilTagLibrary library = getCenterStageTagLibrary();
 
+    /**
+     * Common calibrations can be found under <a href="https://github.com/marvelsatjiar/ftc-24064-2024/blob/75de9c200b0a6623cd4f7505753be39556633b36/TeamCode/src/main/res/xml/teamwebcamcalibrations.xml">teamwebcamcalibrations.xml</a>. This calibration was done with mrcal at 640x480 on a C920. More information about common calibrating tools can be found here: <a href="https://ftc-docs.firstinspires.org/en/latest/programming_resources/vision/camera_calibration/camera-calibration.html">Camera Calibration for FIRST Tech Challenge</a>
+     */
     public static final double
-            fx = 578.272,
-            fy = 578.272,
-            cx = 402.145,
-            cy = 221.506;
+            fx = 693.5217154,
+            fy = 687.7523885,
+            cx = 326.6183680,
+            cy = 243.0307655;
 
     public final VisionPortal visionPortal;
     private final AprilTagProcessor aprilTagProcessor;
@@ -42,7 +45,7 @@ public class AprilTagSensor {
                 .setDrawCubeProjection(false)
                 .setDrawTagOutline(true)
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                .setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+                .setTagLibrary(library)
                 .setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
                 .setLensIntrinsics(fx, fy, cx, cy)
                 .build();
@@ -64,13 +67,13 @@ public class AprilTagSensor {
         if (loops >= STEP_SIZE) {
             for (AprilTagDetection detection : getRawDetections()) {
                 if (detection.metadata != null) {
-                    boolean isLargeTag = detection.metadata.id >= 7;
-                    int multiplier = isLargeTag ? 1 : -1;
+                    boolean isAudienceSideTag = detection.metadata.id >= 7;
+                    int multiplier = isAudienceSideTag ? 1 : -1;
                     VectorF tagVec = library.lookupTag(detection.id).fieldPosition;
                     estimate = new Pose2d(
                             tagVec.get(0) + (detection.ftcPose.y - offset.y) * multiplier,
                             tagVec.get(1) + (detection.ftcPose.x - offset.x) * -multiplier,
-                            Math.toRadians((isLargeTag ? 0 : 180) + detection.ftcPose.yaw)
+                            Math.toRadians((isAudienceSideTag ? 0 : 180) + detection.ftcPose.yaw)
                     );
                 }
             }
