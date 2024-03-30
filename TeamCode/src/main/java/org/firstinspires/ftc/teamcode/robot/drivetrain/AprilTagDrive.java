@@ -17,6 +17,9 @@ public class AprilTagDrive extends MecanumDrive {
     public static class Params {
         // For example, 0.4 means localizer will be weighted 40% while April Tag estimate will be weighted 60%
         public double localizerTrust = 0.4;
+        // Distance from camera lens to the middle of the drivetrain (inches)
+        public Vector2d offset = new Vector2d(0, -7.5);
+        public boolean isBackFacing = true;
     }
 
     public static Params PARAMS = new Params();
@@ -36,7 +39,7 @@ public class AprilTagDrive extends MecanumDrive {
      * Create AprilTagSensor after drivetrain creation. This is useful for applications where the camera must be used for other purposes before sensing April Tags
      */
     public void createAprilTagSensor() {
-        aprilTag = new AprilTagSensor(hardwareMap);
+        aprilTag = new AprilTagSensor(hardwareMap, PARAMS.isBackFacing, PARAMS.offset, "Webcam 1");
     }
 
     @Override
@@ -47,7 +50,7 @@ public class AprilTagDrive extends MecanumDrive {
 
         Pose2d tagEstimate = null;
         if (aprilTag != null) {
-            tagEstimate = aprilTag.getPoseEstimate();
+            tagEstimate = aprilTag.getPoseEstimate(localizerPose.heading.toDouble());
         }
 
         if (tagEstimate != null) {
@@ -71,5 +74,4 @@ public class AprilTagDrive extends MecanumDrive {
 
         return twist.velocity().value();
     }
-
 }
