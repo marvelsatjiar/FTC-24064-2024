@@ -47,6 +47,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
+import org.firstinspires.ftc.teamcode.roadrunner.estimator.Estimator;
 import org.firstinspires.ftc.teamcode.roadrunner.localizer.Localizer;
 import org.firstinspires.ftc.teamcode.roadrunner.message.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.roadrunner.message.PoseMessage;
@@ -118,6 +119,7 @@ public final class TankDrive {
     public final VoltageSensor voltageSensor;
 
     public final Localizer localizer;
+    public final Estimator estimator;
     public Pose2d pose;
 
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
@@ -246,6 +248,7 @@ public final class TankDrive {
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         localizer = new TankDrive.DriveLocalizer();
+        estimator = new Estimator();
 
         FlightRecorder.write("TANK_PARAMS", PARAMS);
     }
@@ -452,7 +455,7 @@ public final class TankDrive {
 
     public PoseVelocity2d updatePoseEstimate() {
         Twist2dDual<Time> twist = localizer.update();
-        pose = pose.plus(twist.value());
+        pose = estimator.estimate(pose.plus(twist.value()));
 
         poseHistory.add(pose);
         while (poseHistory.size() > 100) {

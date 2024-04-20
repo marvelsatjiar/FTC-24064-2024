@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.control.filters.dualfilter;
 
 import org.firstinspires.ftc.teamcode.control.gainmatrices.KalmanGains;
 
-public class KalmanFilter implements DualFilter {
+public final class KalmanFilter implements DualFilter {
     private KalmanGains gains;
     private double x = 0; // Your initial state
     private double p = 1; // Your initial covariance guess

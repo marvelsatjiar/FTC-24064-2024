@@ -9,23 +9,26 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
-import org.firstinspires.ftc.teamcode.robot.drivetrain.AprilTagDrive;
+import org.firstinspires.ftc.teamcode.roadrunner.estimator.IAprilTagEstimator;
+import org.firstinspires.ftc.teamcode.roadrunner.estimator.IIMUEstimator;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.TankDrive;
 import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
-public class LocalizationTest extends LinearOpMode {
+public final class LocalizationTest extends LinearOpMode {
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        if (MecanumDrive.class.isAssignableFrom(TuningOpModes.DRIVE_CLASS)) {
-
+        if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
             MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
-            if (TuningOpModes.DRIVE_CLASS.equals(AprilTagDrive.class)) {
-                drive = new AprilTagDrive(hardwareMap, new Pose2d(0, 0, 0));
-                ((AprilTagDrive) drive).createAprilTagSensor();
+            if (drive.estimator instanceof IAprilTagEstimator) {
+                ((IAprilTagEstimator) drive.estimator).createAprilTagSensor();
+            }
+
+            if (drive.estimator instanceof IIMUEstimator) {
+                ((IIMUEstimator) drive.estimator).startIMUThread(this);
             }
 
             waitForStart();
@@ -54,6 +57,14 @@ public class LocalizationTest extends LinearOpMode {
             }
         } else if (TuningOpModes.DRIVE_CLASS.equals(TankDrive.class)) {
             TankDrive drive = new TankDrive(hardwareMap, new Pose2d(0, 0, 0));
+
+            if (drive.estimator instanceof IAprilTagEstimator) {
+                ((IAprilTagEstimator) drive.estimator).createAprilTagSensor();
+            }
+
+            if (drive.estimator instanceof IIMUEstimator) {
+                ((IIMUEstimator) drive.estimator).startIMUThread(this);
+            }
 
             waitForStart();
 

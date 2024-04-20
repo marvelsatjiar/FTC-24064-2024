@@ -42,6 +42,8 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.roadrunner.Drawing;
+import org.firstinspires.ftc.teamcode.roadrunner.estimator.AprilTagEstimator;
+import org.firstinspires.ftc.teamcode.roadrunner.estimator.Estimator;
 import org.firstinspires.ftc.teamcode.roadrunner.localizer.Localizer;
 import org.firstinspires.ftc.teamcode.roadrunner.localizer.ThreeDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.roadrunner.message.DriveCommandMessage;
@@ -55,7 +57,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Config
-public class MecanumDrive {
+public final class MecanumDrive {
     public static class Params {
         // IMU orientation
         // TODO: fill in these values based on
@@ -116,11 +118,12 @@ public class MecanumDrive {
     public final LazyImu lazyImu;
 
     public final Localizer localizer;
+    public final Estimator estimator;
     public Pose2d pose;
 
-    protected final LinkedList<Pose2d> poseHistory = new LinkedList<>();
+    private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
 
-    protected final DownsampledWriter estimatedPoseWriter = new DownsampledWriter("ESTIMATED_POSE", 50_000_000);
+    private final DownsampledWriter estimatedPoseWriter = new DownsampledWriter("ESTIMATED_POSE", 50_000_000);
     private final DownsampledWriter targetPoseWriter = new DownsampledWriter("TARGET_POSE", 50_000_000);
     private final DownsampledWriter driveCommandWriter = new DownsampledWriter("DRIVE_COMMAND", 50_000_000);
     private final DownsampledWriter mecanumCommandWriter = new DownsampledWriter("MECANUM_COMMAND", 50_000_000);
@@ -242,6 +245,7 @@ public class MecanumDrive {
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
+        estimator = new AprilTagEstimator(hardwareMap);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
@@ -446,7 +450,7 @@ public class MecanumDrive {
 
     public PoseVelocity2d updatePoseEstimate() {
         Twist2dDual<Time> twist = localizer.update();
-        pose = pose.plus(twist.value());
+        pose = estimator.estimate(pose.plus(twist.value()));
 
         poseHistory.add(pose);
         while (poseHistory.size() > 100) {

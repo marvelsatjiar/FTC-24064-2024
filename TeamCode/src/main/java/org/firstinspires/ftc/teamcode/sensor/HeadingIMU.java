@@ -21,6 +21,10 @@ public final class HeadingIMU {
     private double heading, angularVel;
     private final MovingAverageFilter headingFilter, angularVelFilter;
 
+    public static final int BUFFER_SIZE = 10;
+    public static final int STEP_SIZE = 100;
+    private int threadLoops = STEP_SIZE;
+
     public HeadingIMU(HardwareMap hardwareMap, String name, RevHubOrientationOnRobot imuOrientation) {
         synchronized (imuLock) {
             imu = hardwareMap.get(IMU.class, name);
@@ -29,17 +33,21 @@ public final class HeadingIMU {
             imu.initialize(new IMU.Parameters(imuOrientation));
         }
 
-        MovingAverageGains gains = new MovingAverageGains(10);
+        MovingAverageGains gains = new MovingAverageGains(BUFFER_SIZE);
         headingFilter = new MovingAverageFilter(gains);
         angularVelFilter = new MovingAverageFilter(gains);
     }
 
-    // Warning: This has the same effect on your loop times as checking every loop does.
     public void startIMUThread(LinearOpMode opMode) {
         imuThread = new Thread(() -> {
             while (!opMode.isStopRequested()) {
-                synchronized (imuLock) {
-                    update();
+                if (threadLoops >= STEP_SIZE) {
+                    synchronized (imuLock) {
+                        update(BUFFER_SIZE); // Updates values x times (and averages)
+                    }
+                    threadLoops = 0;
+                } else {
+                    threadLoops++;
                 }
             }
         });

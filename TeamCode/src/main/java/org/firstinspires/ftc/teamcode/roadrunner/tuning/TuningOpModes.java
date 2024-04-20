@@ -22,7 +22,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
-import org.firstinspires.ftc.teamcode.robot.drivetrain.AprilTagDrive;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.TankDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.localizer.ThreeDeadWheelLocalizer;
@@ -34,7 +33,7 @@ import java.util.List;
 
 public final class TuningOpModes {
     // TODO: change this to TankDrive.class if you're using tank
-    public static final Class<?> DRIVE_CLASS = AprilTagDrive.class;
+    public static final Class<?> DRIVE_CLASS = MecanumDrive.class;
 
     public static final String GROUP = "quickstart";
     public static final boolean DISABLED = false;
@@ -55,9 +54,7 @@ public final class TuningOpModes {
 
         DriveViewFactory dvf;
 
-        // As long as DRIVE_CLASS is set to something that extends MecanumDrive, tuning will be done with the MecanumDrive
-        // superclass. LocalizationTest does, however, have functionality to work with AprilTagDrive. Feel free to modify.
-        if (MecanumDrive.class.isAssignableFrom(DRIVE_CLASS)) {
+        if (DRIVE_CLASS.equals(MecanumDrive.class)) {
             dvf = hardwareMap -> {
                 MecanumDrive md = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 

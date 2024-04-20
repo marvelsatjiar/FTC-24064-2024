@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 @Config
 @Autonomous(name = "Top 2+4", group = "24064 Main", preselectTeleOp = "MainTeleOp")
-public class TopAuton extends LinearOpMode {
+public final class TopAuton extends LinearOpMode {
     static Robot robot;
     static boolean
             isRed = false,
