@@ -7,6 +7,8 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -26,6 +28,8 @@ public final class Robot {
     public final Lift lift;
     public final SimpleServoPivot launcher;
     public final SimpleServoPivot launcherClamp;
+    public final DistanceSensor leftDistanceSensor;
+    public final DistanceSensor rightDistanceSensor;
     public final Rollers rollers;
     public final SimpleServoPivot purplePixel;
     private final BulkReader bulkReader;
@@ -58,6 +62,9 @@ public final class Robot {
 
         launcher = new SimpleServoPivot(ANGLE_DRONE_LOAD, ANGLE_DRONE_LAUNCH, getGoBildaServo(hardwareMap, "launcher"));
         launcherClamp = new SimpleServoPivot(ANGLE_DRONE_CLAMP, ANGLE_DRONE_UNCLAMPED, getGoBildaServo(hardwareMap, "launcher clamp"));
+
+        leftDistanceSensor = hardwareMap.get(DistanceSensor.class, "left distance");
+        rightDistanceSensor = hardwareMap.get(DistanceSensor.class, "right distance");
 
         purplePixel = new SimpleServoPivot(ANGLE_PURPLE_PIXEL_UNDEPLOYED, ANGLE_PURPLE_PIXEL_DEPLOYED,
                 getGoBildaServo(hardwareMap, "purple placer")

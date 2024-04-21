@@ -3,17 +3,31 @@ package org.firstinspires.ftc.teamcode.robot.centerstage.opmode;
 import static java.lang.Math.toRadians;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TimeTrajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 
 import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.DodgeObjects;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.autonEndPose;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.backboardCenter;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getAllianceSideData;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getPropSensorData;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.mainSpike;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.pixelStack;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.start;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.whiteScoring;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.yellowScoring;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.transition;
+
 import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
 
+import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
@@ -26,6 +40,14 @@ public class TopAuton extends LinearOpMode {
             isParkedMiddle = true,
             isUnderTruss = false,
             doAprilTag = false;
+
+    public enum TrajStates {
+        RANDOMIZATION,
+        CYCLING,
+        IDLE
+    }
+
+    TrajStates currentTraj;
 
     public static double
             START_X = 12;
@@ -41,27 +63,6 @@ public class TopAuton extends LinearOpMode {
             RIGHT = toRadians(0),
             BACKWARD = toRadians(270);
 
-    public static Pose2d
-            start = new Pose2d(START_X, -61.788975, BACKWARD),
-            spikeLeft = new Pose2d((START_X - 6), -34.5, toRadians(135)),
-            spikeCenter = new Pose2d((START_X + 6), -33.5, toRadians(315)),
-            spikeRight = new Pose2d(30, -36, toRadians(315)),
-            backboardLeft = new Pose2d(BACKBOARD_X, isRed ? -30.5 : 30.5, LEFT),
-            backboardCenter = new Pose2d(BACKBOARD_X, isRed ? -35 : 35, LEFT),
-            backboardRight = new Pose2d(BACKBOARD_X, isRed ? -41 : 41, LEFT),
-            parkingLeft = new Pose2d(48.5, -10, toRadians(165)),
-            parkingRight = new Pose2d(48.5, -56, toRadians(200)),
-            spikeDodgeStageDoor = new Pose2d(23, -10, LEFT),
-            stageDoor = new Pose2d(16, -10, LEFT),
-            outerTruss = new Pose2d(23.5, -58, LEFT),
-            pixelStack1 = new Pose2d(-59.25, isRed ? -12 : 12, LEFT),
-            pixelStack3 = new Pose2d(-59.25, isRed ? -35 : 35, LEFT),
-            mainSpike = null,
-            yellowScoring = null,
-            transition = null,
-            whiteScoring = null,
-            pixelStack = null;
-
     @Override
     public void runOpMode() throws InterruptedException {
         robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, 0));
@@ -74,6 +75,10 @@ public class TopAuton extends LinearOpMode {
         int randomization = getPropSensorData(this);
 
         trajectory = trajectories[randomization];
+
+        trajectory.build();
+
+        robot.drivetrain.pose = start;
 
         while (opModeIsActive()) {
             if (!opModeIsActive()) {
@@ -88,41 +93,22 @@ public class TopAuton extends LinearOpMode {
             mTelemetry.addData("Loop time (hertz)", LoopUtil.getLoopTimeInHertz());
             mTelemetry.update();
         }
-
-        trajectory.build();
     }
 
     private TrajectoryActionBuilder getTrajectory(int randomization) {
-        switch (randomization) {
-            case 0:
-                mainSpike = spikeLeft;
-                yellowScoring = backboardLeft;
-                transition = isUnderTruss ? outerTruss : stageDoor;
-                whiteScoring = isUnderTruss ? backboardRight : backboardCenter;
-                break;
-            case 1:
-                mainSpike = spikeCenter;
-                yellowScoring = backboardCenter;
-                transition = isUnderTruss ? outerTruss : spikeDodgeStageDoor;
-                whiteScoring = isUnderTruss ? backboardRight : backboardLeft;
-                break;
-            case 2:
-                mainSpike = spikeRight;
-                yellowScoring = backboardRight;
-                transition = isUnderTruss ? outerTruss : spikeDodgeStageDoor;
-                whiteScoring = isUnderTruss ? backboardCenter : backboardLeft;
-                break;
-        }
-        pixelStack = isUnderTruss ? pixelStack3 : pixelStack1;
+        MainAuton.setLogic(randomization, isUnderTruss);
 
         TrajectoryActionBuilder builder = isRed ? robot.drivetrain.actionBuilder(start) : robot.drivetrain.mirroredActionBuilder(start);
 
+        currentTraj = TrajStates.RANDOMIZATION;
+        Actions.runBlocking(DodgeObjects(builder, currentTraj));
         scorePurplePixel(builder, randomization);
         scoreYellowPixel(builder, randomization);
         getWhitePixels(builder);
         scoreWhitePixels(builder);
         getWhitePixels(builder);
         scoreWhitePixels(builder);
+        currentTraj = TrajStates.IDLE;
 
         return builder;
     }
@@ -145,7 +131,6 @@ public class TopAuton extends LinearOpMode {
             builder
                     .splineToLinearHeading(backboardCenter, Math.PI / 2);
         }
-
         builder
                 .setReversed(true)
                 .splineTo(yellowScoring.position, -Math.PI)
@@ -155,7 +140,11 @@ public class TopAuton extends LinearOpMode {
 
     private void getWhitePixels(TrajectoryActionBuilder builder) {
         builder
-            .splineTo(transition.position, Math.PI)
+            .splineTo(transition.position, Math.PI);
+
+        currentTraj = TrajStates.CYCLING;
+
+        builder
             .splineTo(pixelStack.position, Math.PI);
     }
 
