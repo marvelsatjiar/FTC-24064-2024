@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.teamcode.control.filters.singlefilter.MovingAverageFilter;
+import org.firstinspires.ftc.teamcode.control.filter.singlefilter.MovingAverageFilter;
 import org.firstinspires.ftc.teamcode.control.gainmatrices.MovingAverageGains;
 
 import javax.annotation.concurrent.GuardedBy;
