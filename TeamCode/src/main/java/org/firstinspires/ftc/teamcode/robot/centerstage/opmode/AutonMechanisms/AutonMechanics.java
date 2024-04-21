@@ -43,6 +43,11 @@ public class AutonMechanics {
         private final TrajectoryActionBuilder privateTrajectory;
         private final TopAuton.TrajStates currentTraj;
 
+        private final Action cancelTraj = new FailoverAction(
+            new FollowTrajectoryAction(traj),
+            new InstantAction(() -> setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0)))
+        );
+
         private DodgeObjects(TrajectoryActionBuilder privateTrajectory, TopAuton.TrajStates currentTraj) {
             this.privateTrajectory = privateTrajectory;
             this.currentTraj = currentTraj;
@@ -84,15 +89,7 @@ public class AutonMechanics {
                     telemetryPacket1 -> {
                         controller.setTarget(targetState);
                         if (currentTraj == TopAuton.TrajStates.RANDOMIZATION) {
-                            robot.drivetrain.setDrivePowers(
-                                    new PoseVelocity2d(
-                                            new Vector2d(
-                                                    0,
-                                                    0
-                                            ),
-                                            0
-                                    )
-                            );
+                            cancelTraj;
                         } else {
                             robot.drivetrain.setDrivePowers(
                                     new PoseVelocity2d(
