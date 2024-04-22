@@ -8,7 +8,7 @@ import org.firstinspires.ftc.teamcode.control.filter.dualfilter.ComplementaryFil
 import org.firstinspires.ftc.teamcode.control.gainmatrices.ComplementaryGains;
 import org.firstinspires.ftc.teamcode.sensor.vision.AprilTagSensor;
 
-public class AprilTagEstimator extends Estimator implements IAprilTagEstimator {
+public class AprilTagEstimator implements IAprilTagEstimator {
     public static class Params {
         public String webcamName = "Webcam 1";
         // For example, 0.4 means localizer will be weighted 40% while April Tag estimate will be weighted 60%
