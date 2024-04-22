@@ -48,6 +48,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.auto.Drawing;
 import org.firstinspires.ftc.teamcode.auto.estimator.Estimator;
+import org.firstinspires.ftc.teamcode.auto.estimator.NoEstimator;
 import org.firstinspires.ftc.teamcode.auto.localizer.Localizer;
 import org.firstinspires.ftc.teamcode.auto.message.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.auto.message.PoseMessage;
@@ -248,7 +249,7 @@ public final class TankDrive {
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         localizer = new TankDrive.DriveLocalizer();
-        estimator = new Estimator();
+        estimator = new NoEstimator();
 
         FlightRecorder.write("TANK_PARAMS", PARAMS);
     }

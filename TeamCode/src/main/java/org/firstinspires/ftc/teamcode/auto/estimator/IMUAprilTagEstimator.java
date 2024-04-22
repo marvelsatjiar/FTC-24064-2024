@@ -4,7 +4,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class IMUAprilTagEstimator extends Estimator implements IAprilTagEstimator, IIMUEstimator {
+public class IMUAprilTagEstimator implements IAprilTagEstimator, IIMUEstimator {
     private final IMUEstimator imuEstimator;
     private final AprilTagEstimator aprilTagEstimator;
 

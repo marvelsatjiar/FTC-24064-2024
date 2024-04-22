@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.control.filter.singlefilter;
 
 public interface Filter {
 
-    double calculate(double newValue);
+    default double calculate(double newValue)  {
+        return newValue;
+    }
 
-    void reset();
+    default void reset() {}
 }

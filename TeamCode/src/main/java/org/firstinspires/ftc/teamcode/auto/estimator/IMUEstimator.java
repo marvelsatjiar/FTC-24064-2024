@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.control.gainmatrices.ComplementaryGains;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.sensor.HeadingIMU;
 
-public class IMUEstimator extends Estimator implements IIMUEstimator {
+public class IMUEstimator implements IIMUEstimator {
     public static class Params {
         // For example, 0.4 means localizer will be weighted 40% while April Tag estimate will be weighted 60%
         public double localizerTrust = 0.4;
