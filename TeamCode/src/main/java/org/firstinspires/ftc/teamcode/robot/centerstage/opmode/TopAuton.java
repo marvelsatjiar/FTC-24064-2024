@@ -76,7 +76,9 @@ public final class TopAuton extends LinearOpMode {
 
         trajectory = trajectories[randomization];
 
-        trajectory.build();
+        Action traj = trajectory.build();
+
+        Action runRobot = robot.run();
 
         robot.drivetrain.pose = start;
 
@@ -88,6 +90,7 @@ public final class TopAuton extends LinearOpMode {
             robot.readSensors();
 
             robot.drivetrain.updatePoseEstimate();
+            Actions.runBlocking(traj);
             robot.run();
 
             mTelemetry.addData("Loop time (hertz)", LoopUtil.getLoopTimeInHertz());
