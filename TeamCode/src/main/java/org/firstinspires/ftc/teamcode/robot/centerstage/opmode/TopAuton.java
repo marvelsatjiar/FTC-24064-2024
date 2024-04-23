@@ -4,6 +4,7 @@ import static java.lang.Math.toRadians;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TimeTrajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -78,33 +79,46 @@ public final class TopAuton extends LinearOpMode {
 
         Action traj = trajectory.build();
 
-        Action runRobot = robot.run();
 
         robot.drivetrain.pose = start;
-
+        // you no longer need a loop here, as runBlocking does the loop instead
+        /*
         while (opModeIsActive()) {
             if (!opModeIsActive()) {
                 return;
             }
+        */
+            // removed robot.readSensors() and moving it into the pausing action
 
-            robot.readSensors();
 
-            robot.drivetrain.updatePoseEstimate();
             Actions.runBlocking(traj);
-            robot.run();
+            // todo: this runs *blocking* meaning nothing after it will happen until the entire trajectory finishes
+            // removing robot.run() here as that will be updated inside your pausing action
+            // same thing for robot.drivetrain.updatePoseEstimate();
 
+            /* this part needs to be moved inside the pausing action if you want it to still work every loop
             mTelemetry.addData("Loop time (hertz)", LoopUtil.getLoopTimeInHertz());
             mTelemetry.update();
-        }
+
+             */
+        // used to be end of loop }
     }
 
     private TrajectoryActionBuilder getTrajectory(int randomization) {
         MainAuton.setLogic(randomization, isUnderTruss);
 
         TrajectoryActionBuilder builder = isRed ? robot.drivetrain.actionBuilder(start) : robot.drivetrain.mirroredActionBuilder(start);
-
-        currentTraj = TrajStates.RANDOMIZATION;
-        Actions.runBlocking(DodgeObjects(builder, currentTraj));
+        // any code that you write here happens when the trajectory is *built*, not when it runs
+        // so you can't access current traj directly like you had before (commented out)
+        // currentTraj = TrajStates.RANDOMIZATION;
+        // instead do it in actions which run when the trajectory is being run
+        builder.afterTime(0, // after 0 time so at the start of the trajectory
+                new InstantAction(() -> // () -> is shorthand for creating an unnamed zero-argument function
+                                        // so this is equivalent to run() {
+                        AutonMechanics.currentTraj = TrajStates.RANDOMIZATION)); // and then this code will be run at the start of the trajectory
+        // the code from DodgeObjects should all happen in the run function in the pause action
+        // so i'm removing it here
+        // Actions.runBlocking(DodgeObjects(builder, currentTraj));
         scorePurplePixel(builder, randomization);
         scoreYellowPixel(builder, randomization);
         getWhitePixels(builder);
@@ -115,7 +129,6 @@ public final class TopAuton extends LinearOpMode {
 
         return builder;
     }
-
     private void scorePurplePixel(TrajectoryActionBuilder builder, int randomization) {
         if (randomization == 1) {
             builder
@@ -143,11 +156,9 @@ public final class TopAuton extends LinearOpMode {
 
     private void getWhitePixels(TrajectoryActionBuilder builder) {
         builder
-            .splineTo(transition.position, Math.PI);
-
-        currentTraj = TrajStates.CYCLING;
-
-        builder
+            .splineTo(transition.position, Math.PI)
+                // see line 111
+            .afterTime(0, new InstantAction(() -> AutonMechanics.currentTraj = TrajStates.CYCLING))
             .splineTo(pixelStack.position, Math.PI);
     }
 
