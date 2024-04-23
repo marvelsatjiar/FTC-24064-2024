@@ -13,9 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.DodgeObjects;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.autonEndPose;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.AsyncTrajectoryObjectDodgeAction;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.backboardCenter;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getAllianceSideData;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getPropSensorData;
@@ -36,6 +34,8 @@ import org.firstinspires.ftc.teamcode.util.LoopUtil;
 @Autonomous(name = "Top 2+4", group = "24064 Main", preselectTeleOp = "MainTeleOp")
 public final class TopAuton extends LinearOpMode {
     static Robot robot;
+
+    static Action dodgeObjectsAction;
     static boolean
             isRed = false,
             isParkedMiddle = true,
@@ -81,51 +81,31 @@ public final class TopAuton extends LinearOpMode {
 
 
         robot.drivetrain.pose = start;
-        // you no longer need a loop here, as runBlocking does the loop instead
-        /*
-        while (opModeIsActive()) {
-            if (!opModeIsActive()) {
-                return;
-            }
-        */
-            // removed robot.readSensors() and moving it into the pausing action
 
 
-            Actions.runBlocking(traj);
-            // todo: this runs *blocking* meaning nothing after it will happen until the entire trajectory finishes
-            // removing robot.run() here as that will be updated inside your pausing action
-            // same thing for robot.drivetrain.updatePoseEstimate();
+        // TODO: This runs *blocking* meaning nothing after it will happen until the entire trajectory finishes
+        Actions.runBlocking(traj);
+        Actions.runBlocking(AsyncTrajectoryObjectDodgeAction(traj, robot));
 
-            /* this part needs to be moved inside the pausing action if you want it to still work every loop
-            mTelemetry.addData("Loop time (hertz)", LoopUtil.getLoopTimeInHertz());
-            mTelemetry.update();
-
-             */
-        // used to be end of loop }
     }
 
     private TrajectoryActionBuilder getTrajectory(int randomization) {
         MainAuton.setLogic(randomization, isUnderTruss);
 
         TrajectoryActionBuilder builder = isRed ? robot.drivetrain.actionBuilder(start) : robot.drivetrain.mirroredActionBuilder(start);
-        // any code that you write here happens when the trajectory is *built*, not when it runs
-        // so you can't access current traj directly like you had before (commented out)
-        // currentTraj = TrajStates.RANDOMIZATION;
-        // instead do it in actions which run when the trajectory is being run
-        builder.afterTime(0, // after 0 time so at the start of the trajectory
-                new InstantAction(() -> // () -> is shorthand for creating an unnamed zero-argument function
-                                        // so this is equivalent to run() {
-                        AutonMechanics.currentTraj = TrajStates.RANDOMIZATION)); // and then this code will be run at the start of the trajectory
-        // the code from DodgeObjects should all happen in the run function in the pause action
-        // so i'm removing it here
-        // Actions.runBlocking(DodgeObjects(builder, currentTraj));
+        /* any code that you write here happens when the trajectory is *built*, not when it runs
+         so you can't access current traj directly like you had before (commented out)
+         currentTraj = TrajStates.RANDOMIZATION;
+         instead do it in actions which run when the trajectory is being run */
+
+        builder.afterTime(0, new InstantAction(() -> AutonMechanics.currentTraj = TrajStates.RANDOMIZATION));
         scorePurplePixel(builder, randomization);
         scoreYellowPixel(builder, randomization);
         getWhitePixels(builder);
         scoreWhitePixels(builder);
         getWhitePixels(builder);
         scoreWhitePixels(builder);
-        builder.afterTime(0, new InstantAction(() -> AutonMechanics.currentTraj = TrajStates.IDLE)); // see line 111
+        builder.afterTime(0, new InstantAction(() -> AutonMechanics.currentTraj = TrajStates.IDLE));
 
         return builder;
     }
@@ -157,7 +137,6 @@ public final class TopAuton extends LinearOpMode {
     private void getWhitePixels(TrajectoryActionBuilder builder) {
         builder
             .splineTo(transition.position, Math.PI)
-                // see line 111
             .afterTime(0, new InstantAction(() -> AutonMechanics.currentTraj = TrajStates.CYCLING))
             .splineTo(pixelStack.position, Math.PI);
     }

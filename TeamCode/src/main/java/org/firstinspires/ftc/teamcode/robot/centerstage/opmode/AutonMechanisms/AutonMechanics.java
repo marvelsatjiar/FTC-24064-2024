@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
 
 import androidx.annotation.NonNull;
 
@@ -16,35 +17,32 @@ import com.acmerobotics.roadrunner.Trajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.control.controller.PIDController;
 import org.firstinspires.ftc.teamcode.control.gainmatrices.PIDGains;
 import org.firstinspires.ftc.teamcode.control.motion.State;
 import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
 import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.TopAuton;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
+import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 public class AutonMechanics {
-    // moved this to not be static and to be inside the pausing trajectory action
-    // static Robot robot;
     public static TopAuton.TrajStates currentTraj;
-    /* passing things into a builder, like this code would do, only happens once (when you build it)
-     I changed things so that your updates run as actions and actually update it directly
-     also since everything in this class is static, meaning there is only ever one instance of it, you don't need to have a builder at all
+    static Double targetPower;
+    private static boolean hasDodged = true;
 
-    AutonMechanics(TopAuton.TrajStates currentTraj) {
-        this.currentTraj = currentTraj;
-    }
-     */
-    // TODO: you can't input hasDodged here as this part only happens once when the trajectory is built
-    // TODO: you should move the hasDodged detection with your distance sensors into this action so it updates in the run function
-    public static Action PausingTrajectoryAction(Action traj, boolean hasDodged, Robot robot) { // input robot so that it can be accessed later
+    public static Action AsyncTrajectoryObjectDodgeAction(Action traj, Robot robot) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-                // update the robot every time the action runs
-                robot.readSensors();
-                robot.run();
-                if (!hasDodged) { // TODO: change this to do the detection directly
+                // Action to update all of the needed constants
+                UpdateAction(robot);
+
+                // Action to detect objects for the below actions
+                objectDetection(robot);
+
+                // Logic for whether moving aside or stopping depending if an object is there
+                if (!hasDodged) {
                     if (currentTraj == TopAuton.TrajStates.RANDOMIZATION) {
                         robot.drivetrain.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
                     } else if (currentTraj == TopAuton.TrajStates.CYCLING) {
@@ -58,98 +56,73 @@ public class AutonMechanics {
                                 )
                         );
                     }
+                    // Notably, returning true to run again without changing traj
                     return true;
                 } else {
+                    // Returning back to normal traj; everything is normal
                     return traj.run(telemetryPacket);
                 }
             }
         };
     }
 
-    // move this code into the run function of the PausingTrajectoryAction class
-    // just as normal code not actions
-    public static class DodgeObjects implements Action {
+    public static Action objectDetection(Robot robot) {
 
-        private TrajectoryActionBuilder privateTrajectory;
+        // Setting all constants below for PID and distance sensors
+        Double leftDistance = robot.leftDistanceSensor.getDistance(INCH);
+        Double rightDistance = robot.rightDistanceSensor.getDistance(INCH);
 
-        private boolean hasDodged = true;
-        private double
-                leftDistance,
-                rightDistance,
-                targetPower;
-
-        // TODO: PLEASE TUNE!!!!!!!!!!!!!!!!!!!
-        public PIDGains pidGains = new PIDGains(
+        // TODO: PLEASEEE TUNEE!!!!
+        PIDGains pidGains = new PIDGains(
                 0.005,
                 0.002,
                 0.0001,
                 Double.POSITIVE_INFINITY
         );
 
-        private final PIDController controller = new PIDController();
-        private State targetState;
-
-        private DodgeObjects(TrajectoryActionBuilder privateTrajectory, TopAuton.TrajStates currentTraj) {
-            this.privateTrajectory = privateTrajectory;
-        }
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            new ParallelAction(
-                    privateTrajectory.build(),
-                    PausingTrajectoryAction(privateTrajectory.build(), hasDodged),
-                    telemetryPacket1 -> {
-                        controller.setGains(pidGains);
-                        return false;
-                    },
-
-                    new SequentialAction(
-                            telemetryPacket1 -> {
-                                leftDistance = robot.leftDistanceSensor.getDistance(INCH);
-                                rightDistance = robot.rightDistanceSensor.getDistance(INCH);
-                                return true;
-                                },
-
-                            telemetryPacket1 -> {
-                                if (leftDistance + rightDistance < 4) {
-                                    hasDodged = false;
-                                    if (leftDistance < rightDistance) {
-                                        targetState = new State(-2);
-                                        targetPower = controller.calculate(new State(leftDistance));
-                                    } else {
-                                        targetState = new State(2);
-                                        targetPower = controller.calculate(new State(rightDistance));
-                                    }
-                                }
-
-                                hasDodged = true;
-                                return currentTraj != TopAuton.TrajStates.RANDOMIZATION;
-                            }
-                    ),
-
-                    telemetryPacket1 -> {
+        final PIDController controller = new PIDController();
+        return new Action() {
+            State targetState;
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                // Logic for checking if it is too far & then setting necessary bools
+                if (leftDistance + rightDistance < 6) {
+                    hasDodged = false;
+                    controller.setGains(pidGains);
+                    // If left side has more distance; run that first when it is NOT in randomization
+                    if (leftDistance > rightDistance & currentTraj != TopAuton.TrajStates.RANDOMIZATION) {
+                        targetState = new State(-2);
                         controller.setTarget(targetState);
-                        if (currentTraj == TopAuton.TrajStates.RANDOMIZATION && !hasDodged) {
-                            new InstantAction(() -> robot.drivetrain.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0)));
-                        } else if (!hasDodged) {
-                            robot.drivetrain.setDrivePowers(
-                                    new PoseVelocity2d(
-                                            new Vector2d(
-                                                    0,
-                                                    targetPower
-                                            ),
-                                            0
-                                    )
-                            );
-                        }
-                        return hasDodged;
+                        targetPower = controller.calculate(new State(leftDistance));
+                        // Otherwise, run right side first when it is NOT in randomization
+                    } else if (currentTraj != TopAuton.TrajStates.RANDOMIZATION) {
+                        targetState = new State(2);
+                        controller.setTarget(targetState);
+                        targetPower = controller.calculate(new State(rightDistance));
                     }
-            );
-            return currentTraj != TopAuton.TrajStates.IDLE;
-        }
+                }
+                // Returning true to always check this during traj
+                return true;
+            }
+        };
     }
 
-    public static Action DodgeObjects(TrajectoryActionBuilder privateTrajectory, TopAuton.TrajStates currentTraj) {
-        return new DodgeObjects(privateTrajectory, currentTraj);
+    public static Action UpdateAction(Robot robot) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                // Necessary reading to drive robot and read sensors, as well as updating pose estimate
+                robot.readSensors();
+                robot.drivetrain.updatePoseEstimate();
+                robot.run();
+
+                // Telemetry for debugging if needed
+                mTelemetry.addData("Loop time (hertz)", LoopUtil.getLoopTimeInHertz());
+                mTelemetry.update();
+
+                // No need to keep on running the action; the loop in the above action will run it inside the loop
+                return false;
+            }
+        };
     }
 }
