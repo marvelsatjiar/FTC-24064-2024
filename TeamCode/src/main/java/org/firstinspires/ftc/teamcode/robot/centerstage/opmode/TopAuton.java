@@ -125,7 +125,7 @@ public final class TopAuton extends LinearOpMode {
         scoreWhitePixels(builder);
         getWhitePixels(builder);
         scoreWhitePixels(builder);
-        currentTraj = TrajStates.IDLE;
+        builder.afterTime(0, new InstantAction(() -> AutonMechanics.currentTraj = TrajStates.IDLE)); // see line 111
 
         return builder;
     }
