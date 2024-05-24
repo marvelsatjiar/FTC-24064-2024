@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode.robot.mechanismtest;
+package org.firstinspires.ftc.teamcode.robot.test;
 
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.mTelemetry;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.util.BulkReader;
 import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 
-@TeleOp(group = "Single mechanism test")
+@TeleOp(name = "Test Expansion Hub IMU", group = "Mechanism Test")
 public final class TestExpansionHubIMU extends LinearOpMode {
 
     @Override

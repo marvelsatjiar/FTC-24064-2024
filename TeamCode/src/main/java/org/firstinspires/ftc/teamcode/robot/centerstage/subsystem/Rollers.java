@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode.robot.centerstage;
+package org.firstinspires.ftc.teamcode.robot.centerstage.subsystem;
 
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.mTelemetry;
 import static org.firstinspires.ftc.teamcode.util.SimpleServoPivot.getGoBildaServo;
 import static java.lang.Math.max;
 

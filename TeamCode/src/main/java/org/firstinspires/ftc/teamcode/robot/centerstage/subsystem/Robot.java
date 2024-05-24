@@ -1,17 +1,13 @@
-package org.firstinspires.ftc.teamcode.robot.centerstage;
+package org.firstinspires.ftc.teamcode.robot.centerstage.subsystem;
 
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Arm.TIME_DEPOSIT_1_PIXEL;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Arm.TIME_DEPOSIT_1_PIXEL;
 import static org.firstinspires.ftc.teamcode.util.SimpleServoPivot.getGoBildaServo;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.util.BulkReader;
 import org.firstinspires.ftc.teamcode.util.SimpleServoPivot;
@@ -21,15 +17,12 @@ import org.firstinspires.ftc.teamcode.util.SimpleServoPivot;
  */
 @Config
 public final class Robot {
-    public static MultipleTelemetry mTelemetry;
     public static double maxVoltage = 13;
     public final MecanumDrive drivetrain;
     public final Arm arm;
     public final Lift lift;
     public final SimpleServoPivot launcher;
     public final SimpleServoPivot launcherClamp;
-    public final DistanceSensor leftDistanceSensor;
-    public final DistanceSensor rightDistanceSensor;
     public final Rollers rollers;
     public final SimpleServoPivot purplePixel;
     private final BulkReader bulkReader;
@@ -42,17 +35,15 @@ public final class Robot {
             ANGLE_PURPLE_PIXEL_UNDEPLOYED = 0,
             ANGLE_PURPLE_PIXEL_DEPLOYED = 90;
 
-
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry) {
-        this(hardwareMap, telemetry, new Pose2d(0.0, 0.0, 0.0));
+    public Robot(HardwareMap hardwareMap) {
+        this(hardwareMap, new Pose2d(0.0, 0.0, 0.0));
     }
 
     /**
      * Instantiates a new robot.
      * @param hardwareMap A constant map that holds all the parts for config in code
      */
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry, Pose2d pose) {
-        mTelemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+    public Robot(HardwareMap hardwareMap, Pose2d pose) {
         bulkReader = new BulkReader(hardwareMap);
 
         drivetrain = new MecanumDrive(hardwareMap, pose);
@@ -62,9 +53,6 @@ public final class Robot {
 
         launcher = new SimpleServoPivot(ANGLE_DRONE_LOAD, ANGLE_DRONE_LAUNCH, getGoBildaServo(hardwareMap, "launcher"));
         launcherClamp = new SimpleServoPivot(ANGLE_DRONE_CLAMP, ANGLE_DRONE_UNCLAMPED, getGoBildaServo(hardwareMap, "launcher clamp"));
-
-        leftDistanceSensor = hardwareMap.get(DistanceSensor.class, "left distance");
-        rightDistanceSensor = hardwareMap.get(DistanceSensor.class, "right distance");
 
         purplePixel = new SimpleServoPivot(ANGLE_PURPLE_PIXEL_UNDEPLOYED, ANGLE_PURPLE_PIXEL_DEPLOYED,
                 getGoBildaServo(hardwareMap, "purple placer")
@@ -76,7 +64,6 @@ public final class Robot {
     }
 
     public void hang(double motorPower) {
-        arm.run();
         lift.run(motorPower, false);
     }
 
@@ -98,18 +85,15 @@ public final class Robot {
         arm.run();
     }
 
-    /**
-     * Print telemetry data for user debugging
-     */
     public void printTelemetry() {
         arm.printTelemetry();
-        mTelemetry.addLine();
+        MainTeleOp.mTelemetry.addLine();
         lift.printTelemetry();
-        mTelemetry.addLine();
+        MainTeleOp.mTelemetry.addLine();
         rollers.printTelemetry();
-        mTelemetry.addLine();
-        mTelemetry.addLine();
-        mTelemetry.addLine();
+        MainTeleOp.mTelemetry.addLine();
+        MainTeleOp.mTelemetry.addLine();
+        MainTeleOp.mTelemetry.addLine();
         lift.printNumericalTelemetry();
     }
 }

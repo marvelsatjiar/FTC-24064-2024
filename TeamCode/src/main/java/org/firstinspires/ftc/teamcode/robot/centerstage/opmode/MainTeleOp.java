@@ -3,46 +3,56 @@ package org.firstinspires.ftc.teamcode.robot.centerstage.opmode;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.A;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.B;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_UP;
-import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.X;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.LEFT_TRIGGER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.RIGHT_TRIGGER;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.autonEndPose;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.gamepadEx1;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.gamepadEx2;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.keyPressed;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.robot;
 
-import static java.lang.Math.atan2;
-import static java.lang.Math.hypot;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AbstractAuto.BACKWARD;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AbstractAuto.FORWARD;
 import static java.lang.Math.pow;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
+import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Memory;
+import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot;
 import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 @TeleOp(group = "24064 Main")
 public final class MainTeleOp extends LinearOpMode {
+    static Robot robot;
+    public static GamepadEx gamepadEx1;
+    public static GamepadEx gamepadEx2;
+    public static MultipleTelemetry mTelemetry;
+
+    public static boolean keyPressed(int gamepad, GamepadKeys.Button button) {
+        return (gamepad == 2 ? gamepadEx2 : gamepadEx1).wasJustPressed(button);
+    }
 
     @Override
     public void runOpMode() {
         boolean isHanging = false;
 
+        mTelemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         gamepadEx1 = new GamepadEx(gamepad1);
         gamepadEx2 = new GamepadEx(gamepad2);
 
+        robot = new Robot(hardwareMap);
 
-        robot = new Robot(hardwareMap, telemetry);
-        if (autonEndPose != null) robot.drivetrain.pose = autonEndPose;
+        Pose2d pose = Memory.AUTO_END_POSE;
+        if (pose != null) {
+            robot.drivetrain.pose = new Pose2d(pose.position, pose.heading.toDouble() - (Memory.IS_RED ? FORWARD : BACKWARD));
+        }
 
         robot.purplePixel.setActivated(true);
 
