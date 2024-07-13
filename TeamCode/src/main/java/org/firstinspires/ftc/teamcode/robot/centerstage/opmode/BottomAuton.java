@@ -1,19 +1,5 @@
 package org.firstinspires.ftc.teamcode.robot.centerstage.opmode;
 
-import static java.lang.Math.toRadians;
-
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.InstantAction;
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.TimeTrajectory;
-import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-
-
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.AsyncTrajectoryObjectDodgeAction;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.backboardCenter;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getAllianceSideData;
@@ -21,20 +7,29 @@ import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.mainSpike;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.pixelStack;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.start;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.transition;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.whiteScoring;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.yellowScoring;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.transition;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.TrajStates;
+import static java.lang.Math.PI;
+import static java.lang.Math.toRadians;
+
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
-
 import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics;
-import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
-import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 @Config
 @Autonomous(name = "Top 2+4", group = "24064 Main", preselectTeleOp = "MainTeleOp")
-public final class TopAuton extends LinearOpMode {
+public final class BottomAuton extends LinearOpMode {
     static Robot robot;
 
     static Action dodgeObjectsAction;
@@ -45,7 +40,7 @@ public final class TopAuton extends LinearOpMode {
             doAprilTag = false,
             runScore = false;
 
-    MainAuton.TrajStates currentTraj;
+    TrajStates currentTraj;
 
     public static double
             START_X = 12;
@@ -121,11 +116,9 @@ public final class TopAuton extends LinearOpMode {
     }
 
     private void scoreYellowPixel(TrajectoryActionBuilder builder, int randomization) {
-        if (randomization == 1) {
-            builder
-                    .splineToLinearHeading(backboardCenter, Math.PI / 2);
-        }
         builder
+                .splineToLinearHeading(pixelStack, PI)
+                .splineToLinearHeading(transition, PI)
                 .setReversed(true)
                 .splineTo(yellowScoring.position, -Math.PI)
                 // action here (scoring)
@@ -136,7 +129,7 @@ public final class TopAuton extends LinearOpMode {
     private void getWhitePixels(TrajectoryActionBuilder builder) {
         builder
             .splineTo(transition.position, Math.PI)
-            .afterTime(0, new InstantAction(() -> currentTraj = TrajStates.CYCLING))
+            .afterTime(0, new InstantAction(() -> currentTraj = MainAuton.TrajStates.CYCLING))
             .splineTo(pixelStack.position, Math.PI);
         // action here (intake)
     }

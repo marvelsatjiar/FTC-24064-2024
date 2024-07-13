@@ -40,6 +40,12 @@ public final class MainAuton extends LinearOpMode {
             RIGHT = toRadians(0),
             BACKWARD = toRadians(270);
 
+    public enum TrajStates {
+        RANDOMIZATION,
+        CYCLING,
+        IDLE
+    }
+
     public static Pose2d
             start = new Pose2d(START_X, -61.788975, BACKWARD),
             spikeLeft = new Pose2d((START_X - 6), -34.5, toRadians(135)),

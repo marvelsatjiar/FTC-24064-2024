@@ -21,17 +21,19 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.control.controller.PIDController;
 import org.firstinspires.ftc.teamcode.control.gainmatrices.PIDGains;
 import org.firstinspires.ftc.teamcode.control.motion.State;
+import org.firstinspires.ftc.teamcode.robot.centerstage.Lift;
 import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
+import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.BottomAuton;
+import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton;
 import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.TopAuton;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 public class AutonMechanics {
-    public static TopAuton.TrajStates currentTraj;
     static Double targetPower;
     private static boolean hasDodged = true;
 
-    public static Action AsyncTrajectoryObjectDodgeAction(Action traj, Robot robot) {
+    public static Action AsyncTrajectoryObjectDodgeAction(Action traj, Robot robot, MainAuton.TrajStates currentTraj) {
         return new Action() {
             @Override
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
@@ -39,34 +41,34 @@ public class AutonMechanics {
                 UpdateAction(robot);
 
                 // Action to detect objects for the below actions
-                objectDetection(robot);
+//                objectDetection(robot);
 
                 // Logic for whether moving aside or stopping depending if an object is there
-                if (!hasDodged) {
-                    if (currentTraj == TopAuton.TrajStates.RANDOMIZATION) {
-                        robot.drivetrain.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
-                    } else if (currentTraj == TopAuton.TrajStates.CYCLING) {
-                        robot.drivetrain.setDrivePowers(
-                                new PoseVelocity2d(
-                                        new Vector2d(
-                                                0,
-                                                targetPower
-                                        ),
-                                        0
-                                )
-                        );
-                    }
+//                if (!hasDodged) {
+//                    if (currentTraj == TopAuton.TrajStates.RANDOMIZATION) {
+//                        robot.drivetrain.setDrivePowers(new PoseVelocity2d(new Vector2d(0, 0), 0));
+//                    } else if (currentTraj == TopAuton.TrajStates.CYCLING) {
+//                        robot.drivetrain.setDrivePowers(
+//                                new PoseVelocity2d(
+//                                        new Vector2d(
+//                                                0,
+//                                                targetPower
+//                                        ),
+//                                        0
+//                                )
+//                        );
+//                    }
                     // Notably, returning true to run again without changing traj
-                    return true;
-                } else {
+//                    return true;
+//                } else {
                     // Returning back to normal traj; everything is normal
                     return traj.run(telemetryPacket);
-                }
+//                }
             }
         };
     }
 
-    public static Action objectDetection(Robot robot) {
+    public static Action objectDetection(Robot robot, MainAuton.TrajStates currentTraj) {
 
         // Setting all constants below for PID and distance sensors
         Double leftDistance = robot.leftDistanceSensor.getDistance(INCH);
@@ -90,12 +92,12 @@ public class AutonMechanics {
                     hasDodged = false;
                     controller.setGains(pidGains);
                     // If left side has more distance; run that first when it is NOT in randomization
-                    if (leftDistance > rightDistance & currentTraj != TopAuton.TrajStates.RANDOMIZATION) {
+                    if (leftDistance > rightDistance & currentTraj != MainAuton.TrajStates.RANDOMIZATION) {
                         targetState = new State(-2);
                         controller.setTarget(targetState);
                         targetPower = controller.calculate(new State(leftDistance));
                         // Otherwise, run right side first when it is NOT in randomization
-                    } else if (currentTraj != TopAuton.TrajStates.RANDOMIZATION) {
+                    } else if (currentTraj != MainAuton.TrajStates.RANDOMIZATION) {
                         targetState = new State(2);
                         controller.setTarget(targetState);
                         targetPower = controller.calculate(new State(rightDistance));
@@ -125,4 +127,6 @@ public class AutonMechanics {
             }
         };
     }
+
+
 }
