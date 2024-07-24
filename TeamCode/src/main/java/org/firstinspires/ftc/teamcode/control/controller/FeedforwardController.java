@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.control.controller;
 
-import static org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot.maxVoltage;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot.MAX_VOLTAGE;
 
 import org.firstinspires.ftc.teamcode.control.motion.State;
 import org.firstinspires.ftc.teamcode.control.gainmatrices.FeedforwardGains;
@@ -25,7 +25,7 @@ public class FeedforwardController implements Controller {
 
     public double calculate(double voltage, double additionalOutput) {
         double baseOutput = target.times(gains).sum();
-        return (Math.signum(baseOutput + additionalOutput) * gains.kStatic + baseOutput) * (maxVoltage / voltage);
+        return (Math.signum(baseOutput + additionalOutput) * gains.kStatic + baseOutput) * (MAX_VOLTAGE / voltage);
     }
 
     public double calculate(double voltage) {
@@ -33,7 +33,7 @@ public class FeedforwardController implements Controller {
     }
 
     public double calculate() {
-        return calculate(maxVoltage);
+        return calculate(MAX_VOLTAGE);
     }
 
     /**

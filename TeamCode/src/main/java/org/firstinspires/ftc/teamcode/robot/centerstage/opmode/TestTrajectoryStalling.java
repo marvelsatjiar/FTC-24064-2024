@@ -1,12 +1,12 @@
-package org.firstinspires.ftc.teamcode.robot.centerstage.opmode.test;
+package org.firstinspires.ftc.teamcode.robot.centerstage.opmode;
+
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.robot;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.auto.Actions;
-import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AbstractAuto;
-import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp;
 
 // CenterStage
 @Autonomous(name = "Test Trajectory Stalling", group = "Mechanism Test")

@@ -7,6 +7,7 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.X;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.mTelemetry;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.robot;
 import static java.lang.Math.toRadians;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -24,7 +25,6 @@ import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 @Config
 public abstract class AbstractAuto extends LinearOpMode {
-    protected Robot robot;
     protected PropSensor propSensor;
     protected AutoActionScheduler schedule;
 

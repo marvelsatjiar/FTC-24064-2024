@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.robot.drivetrain;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeRadians;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -120,6 +122,7 @@ public final class MecanumDrive {
     public final Localizer localizer;
     public final Estimator estimator;
     public Pose2d pose;
+    public double headingOffset = 0;
 
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
 
@@ -511,5 +514,34 @@ public final class MecanumDrive {
                 defaultVelConstraint, defaultAccelConstraint,
                 pose -> new Pose2dDual<>(
                         pose.position.x, pose.position.y.unaryMinus(), pose.heading.inverse()));
+    }
+
+    /**
+     * Set internal heading of the robot as to subsequently correct field-centric direction
+     *
+     * @param angle Angle of the robot in radians, 0 facing forward and increases counter-clockwise
+     */
+    public void setCurrentHeading(double angle) {
+        headingOffset = normalizeRadians(pose.heading.toDouble() - angle);
+    }
+
+    public void setFieldCentricPowers(PoseVelocity2d powers) {
+        // Counter-rotate translation vector by current heading
+        Vector2d linearVel = powers.linearVel;
+        double theta = -normalizeRadians(pose.heading.toDouble() - headingOffset);
+        double cos = Math.cos(theta);
+        double sin = Math.sin(theta);
+        double x = linearVel.x;
+        double y = linearVel.y;
+        double xCommand = x * cos - y * sin;
+        double yCommand = y * cos + x * sin;
+
+        setDrivePowers(new PoseVelocity2d(
+                new Vector2d(
+                        xCommand,
+                        yCommand
+                ),
+                powers.angVel
+        ));
     }
 }

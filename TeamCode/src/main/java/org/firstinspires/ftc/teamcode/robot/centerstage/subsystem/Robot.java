@@ -17,15 +17,7 @@ import org.firstinspires.ftc.teamcode.util.SimpleServoPivot;
  */
 @Config
 public final class Robot {
-    public static double maxVoltage = 13;
-    public final MecanumDrive drivetrain;
-    public final Arm arm;
-    public final Lift lift;
-    public final SimpleServoPivot launcher;
-    public final SimpleServoPivot launcherClamp;
-    public final Rollers rollers;
-    public final SimpleServoPivot purplePixel;
-    private final BulkReader bulkReader;
+    public static final double MAX_VOLTAGE = 13;
 
     public static double
             ANGLE_DRONE_LOAD = 140,
@@ -34,6 +26,15 @@ public final class Robot {
             ANGLE_DRONE_UNCLAMPED = 0,
             ANGLE_PURPLE_PIXEL_UNDEPLOYED = 0,
             ANGLE_PURPLE_PIXEL_DEPLOYED = 90;
+
+    public final MecanumDrive drivetrain;
+    public final Arm arm;
+    public final Lift lift;
+    public final SimpleServoPivot launcher;
+    public final SimpleServoPivot launcherClamp;
+    public final Rollers rollers;
+    public final SimpleServoPivot purplePixel;
+    private final BulkReader bulkReader;
 
     public Robot(HardwareMap hardwareMap) {
         this(hardwareMap, new Pose2d(0.0, 0.0, 0.0));

@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.robot.centerstage.opmode;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.A;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.B;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.DPAD_UP;
+import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.LEFT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.RIGHT_BUMPER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.X;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
@@ -11,6 +12,8 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.RIGHT_TRIGGER;
 
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AbstractAuto.BACKWARD;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AbstractAuto.FORWARD;
+import static java.lang.Math.atan2;
+import static java.lang.Math.hypot;
 import static java.lang.Math.pow;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -49,9 +52,9 @@ public final class MainTeleOp extends LinearOpMode {
 
         robot = new Robot(hardwareMap);
 
-        Pose2d pose = Memory.AUTO_END_POSE;
-        if (pose != null) {
-            robot.drivetrain.pose = new Pose2d(pose.position, pose.heading.toDouble() - (Memory.IS_RED ? FORWARD : BACKWARD));
+        Pose2d endPose = Memory.AUTO_END_POSE;
+        if (endPose != null) {
+            robot.drivetrain.setCurrentHeading(endPose.heading.toDouble() - (Memory.IS_RED ? FORWARD : BACKWARD));
         }
 
         robot.purplePixel.setActivated(true);
@@ -61,34 +64,31 @@ public final class MainTeleOp extends LinearOpMode {
         while (opModeIsActive()) {
             // Read sensors + gamepads:
             robot.readSensors();
+            robot.drivetrain.updatePoseEstimate();
             gamepadEx1.readButtons();
             gamepadEx2.readButtons();
 
             // Gamepad 1
             // Change the heading of the drivetrain in field-centric mode
             double x = gamepadEx1.getRightX();
+            if (gamepadEx1.isDown(LEFT_BUMPER)) {
+                double y = gamepadEx1.getRightY();
+                if (hypot(x, y) >= 0.8) robot.drivetrain.setCurrentHeading(atan2(y, x));
+                x = 0;
+            }
 
-            if (gamepadEx1.isDown(RIGHT_BUMPER)) {
-                robot.drivetrain.setDrivePowers(
-                        new PoseVelocity2d(
-                                new Vector2d(
-                                        gamepadEx1.getLeftY() * 0.2,
-                                        gamepadEx1.getLeftX() * 0.2
-                                ),
-                                x * 0.2
-                        )
-                );
-            } else {
-                robot.drivetrain.setDrivePowers(
+            double slowMult = gamepadEx1.isDown(RIGHT_BUMPER) ? 0.2 : 1;
+            robot.drivetrain.setFieldCentricPowers(
+                    
                     new PoseVelocity2d(
                             new Vector2d(
-                                    gamepadEx1.getLeftY(),
-                                    gamepadEx1.getLeftX()
+                                    gamepadEx1.getLeftY() * slowMult,
+                                    -gamepadEx1.getLeftX() * slowMult
                             ),
-                            x
+                            -x * slowMult
                     )
-                );
-            }
+            );
+
             if (keyPressed(1, X) && robot.launcherClamp.isActivated()) robot.launcher.toggle();
             if (keyPressed(1, A)) robot.launcherClamp.toggle();
             if (keyPressed(1, DPAD_UP)) isHanging = !isHanging;
@@ -107,10 +107,8 @@ public final class MainTeleOp extends LinearOpMode {
             double trigger1 = gamepadEx1.getTrigger(RIGHT_TRIGGER) - gamepadEx1.getTrigger(LEFT_TRIGGER);
             double trigger2 = gamepadEx2.getTrigger(RIGHT_TRIGGER) - gamepadEx2.getTrigger(LEFT_TRIGGER);
             double intake = trigger1 != 0 ? trigger1 : trigger2;
-            if (!isHanging) robot.rollers.intake(intake);
+            robot.rollers.setIntake(intake);
             robot.rollers.setDeployableWithTrigger(intake);
-
-            robot.drivetrain.updatePoseEstimate();
 
             if (!isHanging) robot.run();
             else robot.hang(trigger1);
