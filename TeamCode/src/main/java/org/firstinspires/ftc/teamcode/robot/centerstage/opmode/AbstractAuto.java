@@ -87,7 +87,7 @@ public abstract class AbstractAuto extends LinearOpMode {
 
     @Override
     public final void runOpMode() {
-        robot = new Robot(hardwareMap);
+        robot = new Robot(hardwareMap, mTelemetry);
         schedule = new AutoActionScheduler(this::update);
         mTelemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 

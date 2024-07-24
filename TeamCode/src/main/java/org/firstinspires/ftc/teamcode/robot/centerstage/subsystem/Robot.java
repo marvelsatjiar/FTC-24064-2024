@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode.robot.centerstage;
+package org.firstinspires.ftc.teamcode.robot.centerstage.subsystem;
 
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Arm.TIME_DEPOSIT_1_PIXEL;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Arm.TIME_DEPOSIT_1_PIXEL;
 import static org.firstinspires.ftc.teamcode.util.SimpleServoPivot.getGoBildaServo;
 
 import com.acmerobotics.dashboard.FtcDashboard;

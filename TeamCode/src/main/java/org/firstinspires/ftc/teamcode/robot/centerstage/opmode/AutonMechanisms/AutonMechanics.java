@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot.mTelemetry;
 
 import androidx.annotation.NonNull;
 
@@ -22,8 +22,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.control.controller.PIDController;
 import org.firstinspires.ftc.teamcode.control.gainmatrices.PIDGains;
 import org.firstinspires.ftc.teamcode.control.motion.State;
-import org.firstinspires.ftc.teamcode.robot.centerstage.Lift;
-import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
+import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Lift;
+import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot;
 import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.BottomAuton;
 import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton;
 import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.TopAuton;
@@ -135,16 +135,14 @@ public class AutonMechanics {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
                 robot.lift.setToAutonHeight(isWhite ? 200 : 0);
-                new SleepAction(1);
-                robot.arm.toggleArm();
-                new SleepAction(0.25);
+                robot.deposit();
+                new SleepAction(0.1);
                 robot.arm.toggleFlap();
+                robot.depositedPixels++;
                 new SleepAction(0.2);
                 robot.arm.toggleFlap();
-                new SleepAction(0.15);
-                robot.arm.toggleArm();
-                new SleepAction(0.2);
-                robot.lift.retract();
+                robot.depositedPixels++;
+                robot.retract();
                 
                 return false;
             }
@@ -157,12 +155,12 @@ public class AutonMechanics {
             public boolean run(@NonNull TelemetryPacket telemetryPacket) {
 
                 robot.rollers.setDeployable(cycle == 1 ? 52 : 32.5);
-                robot.rollers.intake(0.8);
+                robot.rollers.setIntake(0.8);
                 new SleepAction(0.5);
                 robot.rollers.setDeployable(cycle == 1 ? 46 : 20);
                 new SleepAction(0.5);
                 robot.rollers.resetDeployable();
-                robot.rollers.intake(0);
+                robot.rollers.setIntake(0);
 
                 return false;
             }

@@ -29,9 +29,9 @@ import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.transition;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.TrajStates;
 
-import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
 
 import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics;
+import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
 import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
@@ -45,8 +45,7 @@ public final class TopAuton extends LinearOpMode {
             isRed = false,
             isParkedMiddle = true,
             isUnderTruss = false,
-            doAprilTag = false,
-            runScore = false;
+            doAprilTag = false;
 
     MainAuton.TrajStates currentTraj;
 
@@ -55,10 +54,6 @@ public final class TopAuton extends LinearOpMode {
 
     public static double
             BACKBOARD_X = 50.4,
-            ANGLE_1 = 52,
-            ANGLE_2 = 46,
-            ANGLE_3 = 32.5,
-            ANGLE_4 = 20,
             LEFT = toRadians(180),
             FORWARD = toRadians(90),
             RIGHT = toRadians(0),

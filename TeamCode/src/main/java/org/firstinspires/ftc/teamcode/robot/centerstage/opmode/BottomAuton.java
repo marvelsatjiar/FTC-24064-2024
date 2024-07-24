@@ -27,7 +27,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
+import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot;
 import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics;
 
 @Config
@@ -40,8 +40,7 @@ public final class BottomAuton extends LinearOpMode {
             isRed = false,
             isParkedMiddle = true,
             isUnderTruss = false,
-            doAprilTag = false,
-            runScore = false;
+            doAprilTag = false;
 
     TrajStates currentTraj;
 
@@ -50,10 +49,6 @@ public final class BottomAuton extends LinearOpMode {
 
     public static double
             BACKBOARD_X = 50.4,
-            ANGLE_1 = 52,
-            ANGLE_2 = 46,
-            ANGLE_3 = 32.5,
-            ANGLE_4 = 20,
             LEFT = toRadians(180),
             FORWARD = toRadians(90),
             RIGHT = toRadians(0),

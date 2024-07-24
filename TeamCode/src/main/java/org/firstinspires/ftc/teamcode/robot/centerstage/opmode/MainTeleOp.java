@@ -50,7 +50,7 @@ public final class MainTeleOp extends LinearOpMode {
         gamepadEx1 = new GamepadEx(gamepad1);
         gamepadEx2 = new GamepadEx(gamepad2);
 
-        robot = new Robot(hardwareMap);
+        robot = new Robot(hardwareMap, mTelemetry);
 
         Pose2d endPose = Memory.AUTO_END_POSE;
         if (endPose != null) {
