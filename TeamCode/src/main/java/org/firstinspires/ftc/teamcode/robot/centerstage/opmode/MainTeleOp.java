@@ -87,9 +87,13 @@ public final class MainTeleOp extends LinearOpMode {
             // Gamepad 2
             double stick = pow(gamepadEx2.getLeftY(), 3);
             if (stick != 0) robot.lift.setWithStick(stick);
-            if (keyPressed(2, B)) robot.arm.toggleFlap();
             if (robot.lift.getSetPoint() >= 0) {
-                if (keyPressed(2, Y)) robot.arm.toggleArm();
+                robot.deposit();
+                if (keyPressed(2, B)) {
+                    robot.arm.toggleFlap();
+                    robot.depositedPixels++;
+                }
+                robot.retract();
             }
 
             // Shared

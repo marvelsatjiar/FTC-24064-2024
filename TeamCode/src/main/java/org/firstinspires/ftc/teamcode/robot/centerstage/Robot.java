@@ -7,9 +7,9 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
-import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robot.drivetrain.MecanumDrive;
@@ -33,6 +33,9 @@ public final class Robot {
     public final Rollers rollers;
     public final SimpleServoPivot purplePixel;
     private final BulkReader bulkReader;
+    private final ElapsedTime depositTimer = new ElapsedTime();
+    private final ElapsedTime retractTimer = new ElapsedTime();
+    public int depositedPixels;
 
     public static double
             ANGLE_DRONE_LOAD = 140,
@@ -73,6 +76,20 @@ public final class Robot {
 
     public void readSensors() {
         bulkReader.bulkRead();
+    }
+
+    public void deposit() {
+        depositTimer.reset();
+        arm.toggleArm();
+        if (depositTimer.milliseconds() >= 1500) arm.toggleFlap();
+    }
+
+    public void retract() {
+        if (depositedPixels >= 2) {
+            retractTimer.reset();
+            arm.toggleArm();
+            if (retractTimer.milliseconds() >= 1500) lift.retract();
+        }
     }
 
     public void hang(double motorPower) {

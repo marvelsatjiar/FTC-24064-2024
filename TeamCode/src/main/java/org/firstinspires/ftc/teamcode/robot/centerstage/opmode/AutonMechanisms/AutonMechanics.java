@@ -12,6 +12,7 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TimeTrajectory;
 import com.acmerobotics.roadrunner.Trajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -128,5 +129,44 @@ public class AutonMechanics {
         };
     }
 
+    public static Action scoreAction(Robot robot, boolean isWhite) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                robot.lift.setToAutonHeight(isWhite ? 200 : 0);
+                new SleepAction(1);
+                robot.arm.toggleArm();
+                new SleepAction(0.25);
+                robot.arm.toggleFlap();
+                new SleepAction(0.2);
+                robot.arm.toggleFlap();
+                new SleepAction(0.15);
+                robot.arm.toggleArm();
+                new SleepAction(0.2);
+                robot.lift.retract();
+                
+                return false;
+            }
+        };
+    }
+
+    public static Action intakeAction(Robot robot, int cycle) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+
+                robot.rollers.setDeployable(cycle == 1 ? 52 : 32.5);
+                robot.rollers.intake(0.8);
+                new SleepAction(0.5);
+                robot.rollers.setDeployable(cycle == 1 ? 46 : 20);
+                new SleepAction(0.5);
+                robot.rollers.resetDeployable();
+                robot.rollers.intake(0);
+
+                return false;
+            }
+        };
+    }
 
 }

@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.TimeTrajectory;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -15,6 +16,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.AsyncTrajectoryObjectDodgeAction;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.intakeAction;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.scoreAction;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.backboardCenter;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getAllianceSideData;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getPropSensorData;
@@ -98,9 +101,9 @@ public final class TopAuton extends LinearOpMode {
         builder.afterTime(0, new InstantAction(() -> currentTraj = TrajStates.RANDOMIZATION));
         scorePurplePixel(builder, randomization);
         scoreYellowPixel(builder, randomization);
-        getWhitePixels(builder);
+        getWhitePixels(builder, 1);
         scoreWhitePixels(builder);
-        getWhitePixels(builder);
+        getWhitePixels(builder, 2);
         scoreWhitePixels(builder);
         builder.afterTime(0, new InstantAction(() -> currentTraj = TrajStates.IDLE));
 
@@ -109,12 +112,18 @@ public final class TopAuton extends LinearOpMode {
     private void scorePurplePixel(TrajectoryActionBuilder builder, int randomization) {
         if (randomization == 1) {
             builder
-                .lineToY(mainSpike.position.y)
+                .lineToY(mainSpike.position.y);
+            robot.purplePixel.toggle();
+            new SleepAction(0.15);
+            builder
                 .lineToY(isRed ? mainSpike.position.y - 3 : mainSpike.position.y + 3);
         } else {
             builder
                     .setReversed(true)
-                    .splineTo(mainSpike.position, -Math.PI)
+                    .splineTo(mainSpike.position, -Math.PI);
+            robot.purplePixel.toggle();
+            new SleepAction(0.15);
+            builder
                     .setReversed(false)
                     .strafeTo(new Vector2d((mainSpike.position.x - 3), (mainSpike.position.y - 3)));
         }
@@ -127,18 +136,22 @@ public final class TopAuton extends LinearOpMode {
         }
         builder
                 .setReversed(true)
-                .splineTo(yellowScoring.position, -Math.PI)
-                // action here (scoring)
+                .splineTo(yellowScoring.position, -Math.PI);
+
+        scoreAction(robot, false);
+
+        builder
                 .setReversed(false)
                 .setTangent(pixelStack.heading);
     }
 
-    private void getWhitePixels(TrajectoryActionBuilder builder) {
+    private void getWhitePixels(TrajectoryActionBuilder builder, int cycle) {
         builder
             .splineTo(transition.position, Math.PI)
             .afterTime(0, new InstantAction(() -> currentTraj = TrajStates.CYCLING))
             .splineTo(pixelStack.position, Math.PI);
-        // action here (intake)
+
+        intakeAction(robot, cycle);
     }
 
     private void scoreWhitePixels(TrajectoryActionBuilder builder) {
@@ -148,6 +161,6 @@ public final class TopAuton extends LinearOpMode {
             .splineTo(whiteScoring.position, RIGHT)
             .setReversed(false);
 
-        // action here (score)
+        scoreAction(robot, true);
     }
 }
