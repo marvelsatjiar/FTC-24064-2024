@@ -9,40 +9,53 @@ import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.X;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.LEFT_TRIGGER;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Trigger.RIGHT_TRIGGER;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.autonEndPose;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.gamepadEx1;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.gamepadEx2;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.keyPressed;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.robot;
 
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AbstractAuto.BACKWARD;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AbstractAuto.FORWARD;
 import static java.lang.Math.atan2;
 import static java.lang.Math.hypot;
 import static java.lang.Math.pow;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.robot.centerstage.Robot;
+import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Memory;
+import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot;
 import org.firstinspires.ftc.teamcode.util.LoopUtil;
 
 @TeleOp(group = "24064 Main")
 public final class MainTeleOp extends LinearOpMode {
+    static Robot robot;
+    public static GamepadEx gamepadEx1;
+    public static GamepadEx gamepadEx2;
+    public static MultipleTelemetry mTelemetry;
+
+    public static boolean keyPressed(int gamepad, GamepadKeys.Button button) {
+        return (gamepad == 2 ? gamepadEx2 : gamepadEx1).wasJustPressed(button);
+    }
 
     @Override
     public void runOpMode() {
         boolean isHanging = false;
 
+        mTelemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+
         gamepadEx1 = new GamepadEx(gamepad1);
         gamepadEx2 = new GamepadEx(gamepad2);
 
+        robot = new Robot(hardwareMap);
 
-        robot = new Robot(hardwareMap, telemetry);
-        if (autonEndPose != null) robot.drivetrain.pose = autonEndPose;
+        Pose2d endPose = Memory.AUTO_END_POSE;
+        if (endPose != null) {
+            robot.drivetrain.setCurrentHeading(endPose.heading.toDouble() - (Memory.IS_RED ? FORWARD : BACKWARD));
+        }
 
         robot.purplePixel.setActivated(true);
 
@@ -51,34 +64,31 @@ public final class MainTeleOp extends LinearOpMode {
         while (opModeIsActive()) {
             // Read sensors + gamepads:
             robot.readSensors();
+            robot.drivetrain.updatePoseEstimate();
             gamepadEx1.readButtons();
             gamepadEx2.readButtons();
 
             // Gamepad 1
             // Change the heading of the drivetrain in field-centric mode
             double x = gamepadEx1.getRightX();
+            if (gamepadEx1.isDown(LEFT_BUMPER)) {
+                double y = gamepadEx1.getRightY();
+                if (hypot(x, y) >= 0.8) robot.drivetrain.setCurrentHeading(atan2(y, x));
+                x = 0;
+            }
 
-            if (gamepadEx1.isDown(RIGHT_BUMPER)) {
-                robot.drivetrain.setDrivePowers(
-                        new PoseVelocity2d(
-                                new Vector2d(
-                                        gamepadEx1.getLeftY() * 0.2,
-                                        gamepadEx1.getLeftX() * 0.2
-                                ),
-                                x * 0.2
-                        )
-                );
-            } else {
-                robot.drivetrain.setDrivePowers(
+            double slowMult = gamepadEx1.isDown(RIGHT_BUMPER) ? 0.2 : 1;
+            robot.drivetrain.setFieldCentricPowers(
+                    
                     new PoseVelocity2d(
                             new Vector2d(
-                                    gamepadEx1.getLeftY(),
-                                    gamepadEx1.getLeftX()
+                                    gamepadEx1.getLeftY() * slowMult,
+                                    -gamepadEx1.getLeftX() * slowMult
                             ),
-                            x
+                            -x * slowMult
                     )
-                );
-            }
+            );
+
             if (keyPressed(1, X) && robot.launcherClamp.isActivated()) robot.launcher.toggle();
             if (keyPressed(1, A)) robot.launcherClamp.toggle();
             if (keyPressed(1, DPAD_UP)) isHanging = !isHanging;
@@ -101,10 +111,8 @@ public final class MainTeleOp extends LinearOpMode {
             double trigger1 = gamepadEx1.getTrigger(RIGHT_TRIGGER) - gamepadEx1.getTrigger(LEFT_TRIGGER);
             double trigger2 = gamepadEx2.getTrigger(RIGHT_TRIGGER) - gamepadEx2.getTrigger(LEFT_TRIGGER);
             double intake = trigger1 != 0 ? trigger1 : trigger2;
-            if (!isHanging) robot.rollers.intake(intake);
+            robot.rollers.setIntake(intake);
             robot.rollers.setDeployableWithTrigger(intake);
-
-            robot.drivetrain.updatePoseEstimate();
 
             if (!isHanging) robot.run();
             else robot.hang(trigger1);

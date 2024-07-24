@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode.robot.centerstage;
+package org.firstinspires.ftc.teamcode.robot.centerstage.subsystem;
 
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.mTelemetry;
 import static org.firstinspires.ftc.teamcode.util.SimpleServoPivot.getGoBildaServo;
 import static java.lang.Math.max;
 
@@ -18,15 +18,16 @@ public final class Rollers {
 
     public static double ANGLE_DEPLOYABLE = 90;
     public static double ANGLE_MIN_DEPLOYABLE = 2;
-    public double setPoint = ANGLE_DEPLOYABLE;
+    private double setPoint = ANGLE_DEPLOYABLE;
+    private double intakePower = 0;
 
     public Rollers(HardwareMap hardwareMap) {
         deployableRoller = getGoBildaServo(hardwareMap, "roller1");
         intake = new MotorEx(hardwareMap, "intake", Motor.GoBILDA.RPM_1620);
     }
 
-    public void intake(double power) {
-        intake.set(power);
+    public void setIntake(double power) {
+        intakePower = power;
     }
 
     public double intakePower() {
@@ -46,6 +47,7 @@ public final class Rollers {
     }
 
     public void run() {
+        intake.set(intakePower);
         deployableRoller.turnToAngle(setPoint);
     }
 

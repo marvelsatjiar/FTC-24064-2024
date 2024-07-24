@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode.robot.mechanismtest;
+package org.firstinspires.ftc.teamcode.robot.test;
 
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.A;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.B;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.X;
 import static com.arcrobotics.ftclib.gamepad.GamepadKeys.Button.Y;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.gamepadEx1;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.keyPressed;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.gamepadEx1;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.keyPressed;
 import static org.firstinspires.ftc.teamcode.util.LEDIndicator.State.AMBER;
 import static org.firstinspires.ftc.teamcode.util.LEDIndicator.State.GREEN;
 import static org.firstinspires.ftc.teamcode.util.LEDIndicator.State.OFF;
@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.util.BulkReader;
 import org.firstinspires.ftc.teamcode.util.LEDIndicator;
 
 
-@TeleOp(group = "Single mechanism test")
+@TeleOp(name = "Test Indicators", group = "Mechanism Test")
 public final class TestIndicators extends LinearOpMode {
 
     @Override

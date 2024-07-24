@@ -1,8 +1,8 @@
-package org.firstinspires.ftc.teamcode.robot.centerstage;
+package org.firstinspires.ftc.teamcode.robot.centerstage.subsystem;
 
 import static com.arcrobotics.ftclib.hardware.motors.Motor.GoBILDA.RPM_435;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.Robot.maxVoltage;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.mTelemetry;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot.MAX_VOLTAGE;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -129,7 +129,7 @@ public final class Lift {
      * @param voltageCompensate; Boolean that is used if battery is low, and if it needs to compensate (save)
      */
     public void run(double motorPower, boolean voltageCompensate) {
-        double scalar = maxVoltage / batteryVoltageSensor.getVoltage();
+        double scalar = MAX_VOLTAGE / batteryVoltageSensor.getVoltage();
 
         if (voltageCompensate) motorPower *= scalar;
 

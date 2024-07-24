@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.control.gainmatrices
 
-import org.firstinspires.ftc.teamcode.robot.centerstage.Robot.mTelemetry
+import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainTeleOp.mTelemetry
 
 data class HSV @JvmOverloads constructor(
     @JvmField var hue: Double = 0.0,

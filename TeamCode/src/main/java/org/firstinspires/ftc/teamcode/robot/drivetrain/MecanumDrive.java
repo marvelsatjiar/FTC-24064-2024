@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.robot.drivetrain;
 
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.normalizeRadians;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -68,14 +70,14 @@ public final class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
-        public double inPerTick = 0.000557223356017; // 120 in / 215353.5 ticks
-        public double lateralInPerTick = 0.00038516347792048763;
-        public double trackWidthTicks = 24564.95056595785;
+        public double inPerTick = 0.0029606967506353; // 60 in / 20265.5 ticks
+        public double lateralInPerTick = 0.0020315172274018014;
+        public double trackWidthTicks = 4973.2616142295365;
 
         // feedforward parameters (in tick units)
-        public double kS = 2.1439215920702135;
-        public double kV = 0.00007236170521262162;
-        public double kA = 0.000015;
+        public double kS = 1.7369032071515926;
+        public double kV = 0.0003786150982074891;
+        public double kA = 0.0001;
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -87,9 +89,9 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 2.6;
-        public double lateralGain = 2.9;
-        public double headingGain = 1.5; // shared with turn
+        public double axialGain = 2.0 /*2.6*/;
+        public double lateralGain = 2.4 /*2.9*/;
+        public double headingGain = 2.1 /*1.5*/; // shared with turn
 
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
@@ -120,6 +122,7 @@ public final class MecanumDrive {
     public final Localizer localizer;
     public final Estimator estimator;
     public Pose2d pose;
+    public double headingOffset = 0;
 
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
 
@@ -482,7 +485,7 @@ public final class MecanumDrive {
     public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {
         return new TrajectoryActionBuilder(
                 TurnAction::new,
-                FollowTrajectoryAsPathAction::new,
+                FollowTrajectoryAction::new,
                 new TrajectoryBuilderParams(
                         1e-6,
                         new ProfileParams(
@@ -513,90 +516,32 @@ public final class MecanumDrive {
                         pose.position.x, pose.position.y.unaryMinus(), pose.heading.inverse()));
     }
 
-    public final class FollowTrajectoryAsPathAction implements Action {
-        public final DisplacementTrajectory dt;
-        public final HolonomicController contr;
+    /**
+     * Set internal heading of the robot as to subsequently correct field-centric direction
+     *
+     * @param angle Angle of the robot in radians, 0 facing forward and increases counter-clockwise
+     */
+    public void setCurrentHeading(double angle) {
+        headingOffset = normalizeRadians(pose.heading.toDouble() - angle);
+    }
 
-        private final double[] xPoints, yPoints;
-        double disp;
+    public void setFieldCentricPowers(PoseVelocity2d powers) {
+        // Counter-rotate translation vector by current heading
+        Vector2d linearVel = powers.linearVel;
+        double theta = -normalizeRadians(pose.heading.toDouble() - headingOffset);
+        double cos = Math.cos(theta);
+        double sin = Math.sin(theta);
+        double x = linearVel.x;
+        double y = linearVel.y;
+        double xCommand = x * cos - y * sin;
+        double yCommand = y * cos + x * sin;
 
-        public FollowTrajectoryAsPathAction(TimeTrajectory t) {
-            dt = new DisplacementTrajectory(t.path, t.profile.dispProfile);
-
-            List<Double> disps = com.acmerobotics.roadrunner.Math.range(
-                    0, dt.path.length(),
-                    Math.max(2, (int) Math.ceil(dt.path.length() / 2)));
-            xPoints = new double[disps.size()];
-            yPoints = new double[disps.size()];
-            for (int i = 0; i < disps.size(); i++) {
-                Pose2d p = t.path.get(disps.get(i), 1).value();
-                xPoints[i] = p.position.x;
-                yPoints[i] = p.position.y;
-            }
-
-            contr = new HolonomicController(PARAMS.axialGain, PARAMS.lateralGain, PARAMS.headingGain);
-            disp = 0;
-        }
-
-        @Override
-        public boolean run(@NonNull TelemetryPacket p) {
-            if (disp + 1 > dt.length()) {
-                leftFront.setPower(0);
-                leftBack.setPower(0);
-                rightBack.setPower(0);
-                rightFront.setPower(0);
-
-                return false;
-            }
-            PoseVelocity2d robotVelRobot = updatePoseEstimate();
-            disp = dt.project(pose.position, disp);
-            Pose2dDual<Time> poseTarget = dt.get(disp);
-            PoseVelocity2dDual<Time> cmd = contr.compute(poseTarget, pose, robotVelRobot);
-
-            MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(cmd);
-            double voltage = voltageSensor.getVoltage();
-            final MotorFeedforward feedforward = new MotorFeedforward(PARAMS.kS, PARAMS.kV / PARAMS.inPerTick, PARAMS.kA / PARAMS.inPerTick);
-            leftFront.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
-            leftBack.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
-            rightBack.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
-            rightFront.setPower(feedforward.compute(wheelVels.rightFront) / voltage);
-
-
-
-            FlightRecorder.write("TARGET_POSE", new PoseMessage(poseTarget.value()));
-
-            p.put("x", pose.position.x);
-            p.put("y", pose.position.y);
-            p.put("heading (deg)", Math.toDegrees(pose.heading.log()));
-
-            Pose2d error = poseTarget.value().minusExp(pose);
-            p.put("xError", error.position.x);
-            p.put("yError", error.position.y);
-            p.put("headingError (deg)", Math.toDegrees(error.heading.log()));
-
-            // only draw when active; only one drive action should be active at a time
-            Canvas c = p.fieldOverlay();
-            drawPoseHistory(c);
-
-            c.setStroke("#4CAF50");
-            Drawing.drawRobot(c, poseTarget.value());
-
-            c.setStroke("#3F51B5");
-            Drawing.drawRobot(c, pose);
-
-            c.setStroke("#4CAF50FF");
-            c.setStrokeWidth(1);
-            c.strokePolyline(xPoints, yPoints);
-
-            return true;
-
-        }
-
-        @Override
-        public void preview(Canvas c) {
-            c.setStroke("#4CAF507A");
-            c.setStrokeWidth(1);
-            c.strokePolyline(xPoints, yPoints);
-        }
+        setDrivePowers(new PoseVelocity2d(
+                new Vector2d(
+                        xCommand,
+                        yCommand
+                ),
+                powers.angVel
+        ));
     }
 }

@@ -4,11 +4,11 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-public class IMUAprilTagEstimator implements IAprilTagEstimator, IIMUEstimator {
+public class AprilTagPlusIMUEstimator implements CreateAprilTagEstimator, CreateIMUEstimator {
     private final IMUEstimator imuEstimator;
     private final AprilTagEstimator aprilTagEstimator;
 
-    public IMUAprilTagEstimator(HardwareMap hardwareMap) {
+    public AprilTagPlusIMUEstimator(HardwareMap hardwareMap) {
         this.aprilTagEstimator = new AprilTagEstimator(hardwareMap);
         this.imuEstimator = new IMUEstimator(hardwareMap);
     }
