@@ -28,12 +28,11 @@ public final class Robot {
     public final Lift lift;
     public final SimpleServoPivot launcher;
     public final SimpleServoPivot launcherClamp;
-    public final DistanceSensor leftDistanceSensor;
-    public final DistanceSensor rightDistanceSensor;
+//    public final DistanceSensor leftDistanceSensor;
+//    public final DistanceSensor rightDistanceSensor;
     public final Rollers rollers;
     public final SimpleServoPivot purplePixel;
     private final BulkReader bulkReader;
-    private final ElapsedTime depositTimer = new ElapsedTime();
     private final ElapsedTime retractTimer = new ElapsedTime();
     public int depositedPixels;
 
@@ -66,8 +65,8 @@ public final class Robot {
         launcher = new SimpleServoPivot(ANGLE_DRONE_LOAD, ANGLE_DRONE_LAUNCH, getGoBildaServo(hardwareMap, "launcher"));
         launcherClamp = new SimpleServoPivot(ANGLE_DRONE_CLAMP, ANGLE_DRONE_UNCLAMPED, getGoBildaServo(hardwareMap, "launcher clamp"));
 
-        leftDistanceSensor = hardwareMap.get(DistanceSensor.class, "left distance");
-        rightDistanceSensor = hardwareMap.get(DistanceSensor.class, "right distance");
+//        leftDistanceSensor = hardwareMap.get(DistanceSensor.class, "left distance");
+//        rightDistanceSensor = hardwareMap.get(DistanceSensor.class, "right distance");
 
         purplePixel = new SimpleServoPivot(ANGLE_PURPLE_PIXEL_UNDEPLOYED, ANGLE_PURPLE_PIXEL_DEPLOYED,
                 getGoBildaServo(hardwareMap, "purple placer")
@@ -76,20 +75,6 @@ public final class Robot {
 
     public void readSensors() {
         bulkReader.bulkRead();
-    }
-
-    public void deposit() {
-        depositTimer.reset();
-        arm.toggleArm();
-        if (depositTimer.milliseconds() >= 1500) arm.toggleFlap();
-    }
-
-    public void retract() {
-        if (depositedPixels >= 2) {
-            retractTimer.reset();
-            arm.toggleArm();
-            if (retractTimer.milliseconds() >= 1500) lift.retract();
-        }
     }
 
     public void hang(double motorPower) {

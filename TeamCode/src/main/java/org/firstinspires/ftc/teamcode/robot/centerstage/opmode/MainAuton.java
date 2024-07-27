@@ -16,6 +16,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.ejml.equation.IntegerSequence;
 import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot;
 import org.firstinspires.ftc.teamcode.sensor.vision.PropSensor;
 import org.firstinspires.ftc.teamcode.util.LoopUtil;
@@ -34,7 +35,7 @@ public final class MainAuton extends LinearOpMode {
 
     public static final double
             START_X = 12,
-            BACKBOARD_X = 50.4,
+            BACKBOARD_X = 51.3,
             LEFT = toRadians(180),
             FORWARD = toRadians(90),
             RIGHT = toRadians(0),
@@ -47,20 +48,21 @@ public final class MainAuton extends LinearOpMode {
     }
 
     public static Pose2d
-            start = new Pose2d(START_X, -61.788975, BACKWARD),
-            spikeLeft = new Pose2d((START_X - 6), -34.5, toRadians(135)),
-            spikeCenter = new Pose2d((START_X + 6), -33.5, toRadians(315)),
-            spikeRight = new Pose2d(30, -36, toRadians(315)),
-            backboardLeft = new Pose2d(BACKBOARD_X, isRed ? -30.5 : 30.5, LEFT),
-            backboardCenter = new Pose2d(BACKBOARD_X, isRed ? -35 : 35, LEFT),
-            backboardRight = new Pose2d(BACKBOARD_X, isRed ? -41 : 41, LEFT),
+            startRed = new Pose2d(START_X, -61.788975, BACKWARD),
+            startBlue = new Pose2d(START_X, 61.788975, FORWARD),
+            spikeLeft = new Pose2d((START_X - 5.45), -34.5, toRadians(135)),
+            spikeCenter = new Pose2d((START_X + 6), -34.25, toRadians(0)),
+            spikeRight = new Pose2d((START_X + 7.75), -35, toRadians(45)),
+            backboardLeft = new Pose2d(BACKBOARD_X, -30.5, LEFT),
+            backboardCenter = new Pose2d(BACKBOARD_X, -35, LEFT),
+            backboardRight = new Pose2d(BACKBOARD_X, -41, LEFT),
             parkingLeft = new Pose2d(48.5, -10, toRadians(165)),
             parkingRight = new Pose2d(48.5, -56, toRadians(200)),
             spikeDodgeStageDoor = new Pose2d(23, -10, LEFT),
             stageDoor = new Pose2d(16, -10, LEFT),
             outerTruss = new Pose2d(23.5, -58, LEFT),
-            pixelStack1 = new Pose2d(-59.25, isRed ? -12 : 12, LEFT),
-            pixelStack3 = new Pose2d(-59.25, isRed ? -35 : 35, LEFT),
+            pixelStack1 = new Pose2d(-56.5, -12, LEFT),
+            pixelStack3 = new Pose2d(-56.5, -35, LEFT),
             mainSpike = null,
             yellowScoring = null,
             transition = null,
@@ -118,8 +120,8 @@ public final class MainAuton extends LinearOpMode {
     public static void setLogic(int randomization, boolean isUnderTruss) {
         switch (randomization) {
             case 0:
-                mainSpike = spikeLeft;
-                yellowScoring = backboardLeft;
+                mainSpike = isRed ? spikeLeft : spikeRight;
+                yellowScoring = isRed ? backboardLeft : backboardRight;
                 transition = isUnderTruss ? outerTruss : stageDoor;
                 whiteScoring = isUnderTruss ? backboardRight : backboardCenter;
                 break;
@@ -130,8 +132,8 @@ public final class MainAuton extends LinearOpMode {
                 whiteScoring = isUnderTruss ? backboardRight : backboardLeft;
                 break;
             case 2:
-                mainSpike = spikeRight;
-                yellowScoring = backboardRight;
+                mainSpike = isRed ? spikeRight : spikeLeft;
+                yellowScoring = isRed ? backboardRight : backboardLeft;
                 transition = isUnderTruss ? outerTruss : spikeDodgeStageDoor;
                 whiteScoring = isUnderTruss ? backboardCenter : backboardLeft;
                 break;

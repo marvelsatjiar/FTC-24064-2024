@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode.robot.centerstage.opmode;
 
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.AsyncTrajectoryObjectDodgeAction;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.intakeAction;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.scoreAction;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.backboardCenter;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics.UpdateAction;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getAllianceSideData;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.getPropSensorData;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.mainSpike;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.pixelStack;
-import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.start;
+import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.startRed;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.transition;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.whiteScoring;
 import static org.firstinspires.ftc.teamcode.robot.centerstage.opmode.MainAuton.yellowScoring;
@@ -18,9 +15,7 @@ import static java.lang.Math.toRadians;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.InstantAction;
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -28,11 +23,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot;
-import org.firstinspires.ftc.teamcode.robot.centerstage.opmode.AutonMechanisms.AutonMechanics;
 
 @Config
-@Autonomous(name = "Top 2+4", group = "24064 Main", preselectTeleOp = "MainTeleOp")
-public final class BottomAuton extends LinearOpMode {
+@Autonomous(name = "BottomAuton", group = "24064 Main", preselectTeleOp = "MainTeleOp")
+public final class Bottom2_5 extends LinearOpMode {
     static Robot robot;
 
     static Action dodgeObjectsAction;
@@ -45,7 +39,7 @@ public final class BottomAuton extends LinearOpMode {
     TrajStates currentTraj;
 
     public static double
-            START_X = 12;
+            START_X = -35;
 
     public static double
             BACKBOARD_X = 50.4,
@@ -56,99 +50,101 @@ public final class BottomAuton extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        robot = new Robot(hardwareMap, telemetry, new Pose2d(0, 0, 0));
+        robot = new Robot(hardwareMap, telemetry, startRed);
 
         getAllianceSideData(this);
 
+        int randomization = getPropSensorData(this);
+
         TrajectoryActionBuilder[] trajectories = {getTrajectory(0), getTrajectory(1), getTrajectory(2)};
         TrajectoryActionBuilder trajectory;
-
-        int randomization = getPropSensorData(this);
 
         trajectory = trajectories[randomization];
 
         Action traj = trajectory.build();
 
-
-        robot.drivetrain.pose = start;
-
-
         // TODO: This runs *blocking* meaning nothing after it will happen until the entire trajectory finishes
-        Actions.runBlocking(traj);
-        Actions.runBlocking(AsyncTrajectoryObjectDodgeAction(traj, robot, currentTraj));
+        Actions.runBlocking(new ParallelAction(
+                traj,
+                UpdateAction(robot)
+        ));
 
     }
 
     private TrajectoryActionBuilder getTrajectory(int randomization) {
+
         MainAuton.setLogic(randomization, isUnderTruss);
 
-        TrajectoryActionBuilder builder = isRed ? robot.drivetrain.actionBuilder(start) : robot.drivetrain.mirroredActionBuilder(start);
+        TrajectoryActionBuilder builder = isRed ? robot.drivetrain.mirroredActionBuilder(startRed) : robot.drivetrain.actionBuilder(startRed);
         /* any code that you write here happens when the trajectory is *built*, not when it runs
          so you can't access current traj directly like you had before (commented out)
          currentTraj = TrajStates.RANDOMIZATION;
          instead do it in actions which run when the trajectory is being run */
 
-        builder.afterTime(0, new InstantAction(() -> currentTraj = TrajStates.RANDOMIZATION));
-        scorePurplePixel(builder, randomization);
-        scoreYellowPixel(builder);
-        getWhitePixels(builder, 1);
-        scoreWhitePixels(builder);
-        getWhitePixels(builder, 2);
-        scoreWhitePixels(builder);
-        builder.afterTime(0, new InstantAction(() -> currentTraj = TrajStates.IDLE));
+//        builder.afterTime(0, new InstantAction(() -> currentTraj = TrajStates.RANDOMIZATION));
+        builder = scorePurplePixel(builder, randomization);
+        builder = scoreYellowPixel(builder);
+        builder = getWhitePixels(builder, 1);
+        builder = scoreWhitePixels(builder);
+        builder = getWhitePixels(builder, 2);
+        builder = scoreWhitePixels(builder);
+//        builder.afterTime(0, new InstantAction(() -> currentTraj = TrajStates.IDLE));
 
         return builder;
     }
-    private void scorePurplePixel(TrajectoryActionBuilder builder, int randomization) {
+    private TrajectoryActionBuilder scorePurplePixel(TrajectoryActionBuilder builder, int randomization) {
         if (randomization == 1) {
-            builder
+            builder = builder
                 .lineToY(mainSpike.position.y);
-            robot.purplePixel.toggle();
-            new SleepAction(0.15);
-            builder
+//            builder = builder.afterTime(0.3, new InstantAction(() -> robot.purplePixel.toggle()));
+            builder = builder
                 .lineToY(isRed ? mainSpike.position.y - 3 : mainSpike.position.y + 3);
         } else {
-            builder
+            builder = builder
                     .setReversed(true)
-                    .splineTo(mainSpike.position, -Math.PI);
-            robot.purplePixel.toggle();
-            new SleepAction(0.15);
-            builder
+                    .splineTo(mainSpike.position, toRadians(randomization == 2 ? 45 : 135));
+//            builder = builder.afterTime(0.3, new InstantAction(() -> robot.purplePixel.toggle()));
+            builder = builder
                     .setReversed(false)
                     .strafeTo(new Vector2d((mainSpike.position.x - 3), (mainSpike.position.y - 3)));
         }
+
+        return builder;
     }
 
-    private void scoreYellowPixel(TrajectoryActionBuilder builder) {
-        builder
-                .splineToLinearHeading(pixelStack, PI)
-                .splineToLinearHeading(transition, PI)
+    private TrajectoryActionBuilder scoreYellowPixel(TrajectoryActionBuilder builder) {
+        builder = builder
+                .splineToLinearHeading(pixelStack, -PI)
+                .lineToX(transition.position.x)
                 .setReversed(true)
-                .splineTo(yellowScoring.position, -Math.PI);
+                .splineTo(yellowScoring.position, toRadians(0));
 
-         scoreAction(robot, false);
+//        builder.afterTime(0.45, scoreAction(robot, false));
 
-        builder
-                .setReversed(false)
-                .setTangent(pixelStack.heading);
+        return builder;
     }
 
-    private void getWhitePixels(TrajectoryActionBuilder builder, int cycle) {
-        builder
+    private TrajectoryActionBuilder getWhitePixels(TrajectoryActionBuilder builder, int cycle) {
+        builder = builder
+            .setReversed(false)
+            .setTangent(pixelStack.heading)
             .splineTo(transition.position, Math.PI)
-            .afterTime(0, new InstantAction(() -> currentTraj = MainAuton.TrajStates.CYCLING))
+//            .afterTime(0, new InstantAction(() -> currentTraj = MainAuton.TrajStates.CYCLING))
             .splineTo(pixelStack.position, Math.PI);
 
-        intakeAction(robot, cycle);
+//        builder = builder.afterTime(0.3, intakeAction(robot, cycle));
+
+        return builder;
     }
 
-    private void scoreWhitePixels(TrajectoryActionBuilder builder) {
-        builder
+    private TrajectoryActionBuilder scoreWhitePixels(TrajectoryActionBuilder builder) {
+        builder = builder
             .setReversed(true)
             .splineTo(transition.position, RIGHT)
-            .splineTo(whiteScoring.position, RIGHT)
-            .setReversed(false);
+            .splineTo(whiteScoring.position, RIGHT);
 
-        scoreAction(robot, true);
+//        builder = builder.afterTime(0.45, scoreAction(robot, false));
+
+        return builder;
     }
 }

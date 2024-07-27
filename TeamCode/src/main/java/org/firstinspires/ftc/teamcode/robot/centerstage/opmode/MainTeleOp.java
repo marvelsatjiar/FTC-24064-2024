@@ -97,14 +97,8 @@ public final class MainTeleOp extends LinearOpMode {
             // Gamepad 2
             double stick = pow(gamepadEx2.getLeftY(), 3);
             if (stick != 0) robot.lift.setWithStick(stick);
-            if (robot.lift.getSetPoint() >= 0) {
-                robot.deposit();
-                if (keyPressed(2, B)) {
-                    robot.arm.toggleFlap();
-                    robot.depositedPixels++;
-                }
-                robot.retract();
-            }
+            if (keyPressed(2, Y)) robot.arm.toggleArm();
+            if (keyPressed(2, B)) robot.arm.toggleFlap();
 
             // Shared
             // The intake power takes precedent to the first player

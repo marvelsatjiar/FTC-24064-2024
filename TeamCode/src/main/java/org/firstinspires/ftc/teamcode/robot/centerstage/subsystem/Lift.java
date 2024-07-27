@@ -46,7 +46,7 @@ public final class Lift {
      * Remember to set these constants correctly! (in ticks)
      */
     public static double
-            AUTON_ROW_HEIGHT = 600,
+            AUTON_ROW_HEIGHT = 550,
             MAX_MOTOR_TICKS = 2350,
             MIN_MOTOR_TICKS = -5,
             kG = 0.011065,
@@ -91,6 +91,10 @@ public final class Lift {
 
     public int getSetPoint() {
         return setPoint;
+    }
+
+    public double getCurrentTicks() {
+        return currentState.x;
     }
 
     public void setToAutonHeight(double offset) {
