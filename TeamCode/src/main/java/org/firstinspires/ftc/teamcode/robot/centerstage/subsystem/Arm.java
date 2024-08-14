@@ -67,10 +67,6 @@ public final class Arm {
         flap.setActivated(isClosed);
     }
 
-    public boolean isArmActivated() {
-        return armPivot.isActivated();
-    }
-
     public void run() {
         flap.updateAngles(ANGLE_OPEN_FLAP, ANGLE_CLOSED_FLAP);
         armPivot.updateAngles(ANGLE_COLLECTING, ANGLE_DEPOSITING);
@@ -81,7 +77,7 @@ public final class Arm {
     }
 
     public void printTelemetry() {
-        mTelemetry.addData("flap is", (flap.isActivated() ? "closed" : "open"));
+        mTelemetry.addData("Flap is", (flap.isActivated() ? "closed" : "open"));
         mTelemetry.addData("Arm is", "running to " + (armPivot.isActivated() ? "deposit" : "collect"));
     }
 }

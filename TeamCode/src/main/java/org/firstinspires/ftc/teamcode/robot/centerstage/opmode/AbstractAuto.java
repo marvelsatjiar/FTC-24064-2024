@@ -13,11 +13,13 @@ import static java.lang.Math.toRadians;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.auto.AutoActionScheduler;
 import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Memory;
 import org.firstinspires.ftc.teamcode.robot.centerstage.subsystem.Robot;
 import org.firstinspires.ftc.teamcode.sensor.vision.PropSensor;
@@ -26,7 +28,6 @@ import org.firstinspires.ftc.teamcode.util.LoopUtil;
 @Config
 public abstract class AbstractAuto extends LinearOpMode {
     protected PropSensor propSensor;
-    protected AutoActionScheduler schedule;
 
     public static final double
             LEFT = toRadians(180),
@@ -88,7 +89,6 @@ public abstract class AbstractAuto extends LinearOpMode {
     @Override
     public final void runOpMode() {
         robot = new Robot(hardwareMap);
-        schedule = new AutoActionScheduler(this::update);
         mTelemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         onInit();
@@ -98,14 +98,22 @@ public abstract class AbstractAuto extends LinearOpMode {
         if (isStopRequested()) return;
 
         resetRuntime();
-        robot.drivetrain.updatePoseEstimate();
         robot.drivetrain.pose = getStartPose();
-        onRun();
+
+        Actions.runBlocking(
+                new ParallelAction(
+                        onRun(),
+                        new org.firstinspires.ftc.teamcode.auto.Actions.RunnableAction(() -> {
+                            update();
+                            return opModeIsActive();
+                        })
+                )
+        );
 
         Memory.AUTO_END_POSE = robot.drivetrain.pose;
     }
 
     protected void onInit() {}
     protected abstract Pose2d getStartPose();
-    protected abstract void onRun();
+    protected abstract Action onRun();
 }
